@@ -5,18 +5,13 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 #include <stdio.h> // CORREÇÃO: Necessário para snprintf
-#include <time.h>
-#include <stdlib.h>
 
 #define LARGURA 1280
 #define ALTURA 720
 #define MAX_BALAS 2000
-#define INIMIGO_LARGURA 32
-#define INIMIGO_ALTURA 32
-#define LIMITE 30
 
 // Caminho absoluto para o seu sistema Linux
-#define SPRITES_DIR "/home/vitim/Desktop/Geral/jogo/Lampi-o-Survivors/Projeto_jogo/Spritesjogo/"
+#define SPRITES_DIR "/home/vitim/Desktop/Geral/Pastas/Spritesjogo/"
 
 enum {
     CIMA,
@@ -31,16 +26,6 @@ typedef struct {
     ALLEGRO_BITMAP* personagem;
     int colisao;
 } Vasco;
-
-typedef struct{
-    int posx;
-    int posy;
-    ALLEGRO_BITMAP* monstro;
-    int vida;
-    int dano;
-    int velocidade;
-    int vivo;
-} Homem_tatu;
 
 typedef struct {
     int movimento;
@@ -59,8 +44,6 @@ int teste(bool resultado_init, const char* mensagem) {
 }
 
 int main() {
-    srand(time(NULL));
-
     bool fim = false;
     bool teclas[] = { false, false, false, false }; 
 
@@ -70,16 +53,6 @@ int main() {
     ALLEGRO_EVENT_QUEUE* fila_eventos = NULL;
 
     Bala bala[MAX_BALAS];
-    Homem_tatu homem_tatus[LIMITE];
-    ALLEGRO_BITMAP* sprite_tatu = NULL;
-    int indice_tatu = 0;
-    float ultimo_spawn = 0;
-    const float cooldown = 5;
-    //para animação
-    int contador_frames = 0;
-    const int frame_delay = 10;
-    const int total_frames_tatu = 3;
-    int frame_atual = 0;
     int cont = 0; 
 
     Vasco canga;
@@ -111,20 +84,15 @@ int main() {
     char path_personagem[256];
     char path_background[256];
     char path_font[256];
-    char path_peba[256];
     
     // Constrói os caminhos completos
     snprintf(path_personagem, sizeof(path_personagem), "%s%s", SPRITES_DIR, "Sprite-0002.png");
     snprintf(path_background, sizeof(path_background), "%s%s", SPRITES_DIR, "backgroud.png");
     snprintf(path_font, sizeof(path_font), "%s%s", SPRITES_DIR, "FiftiesMovies.ttf");
-    snprintf(path_peba, sizeof(path_peba), "%s%s", SPRITES_DIR, "Homem_peba.png");
 
 
     canga.personagem = al_load_bitmap(path_personagem);
     if ((retorno_erro = teste(canga.personagem, "Falha ao carregar a imagem do personagem. Verifique o caminho e as dependências PNG.")) != 0) return retorno_erro;
-
-    sprite_tatu = al_load_bitmap(path_peba);
-    if((retorno_erro = teste(sprite_tatu, "Falha ao carregar o sprite do homem peba.")) != 0) return retorno_erro;
 
     ALLEGRO_BITMAP* background = al_load_bitmap(path_background);
     if ((retorno_erro = teste(background, "Falha ao carregar a imagem de fundo.")) != 0) return retorno_erro; 
@@ -207,13 +175,6 @@ int main() {
         
         // Lógica de Atualização (Física e Movimento)
         else if (ev.type == ALLEGRO_EVENT_TIMER) {
-
-            //Timer
-            double count = al_get_timer_count(timer);
-            double counts = count/60;
-            char tempo [20];
-            sprintf(tempo, "Tempo: %.2f", counts);
-
             // Movimento do Personagem
             if (teclas[CIMA]) canga.posy -= velocidade_personagem;
             if (teclas[BAIXO]) canga.posy += velocidade_personagem;
@@ -240,79 +201,7 @@ int main() {
                         bala[i].ativa = false;
                     }
                 }
-
             }
-
-            //frames
-                contador_frames++;
-
-                if(contador_frames >= frame_delay) {
-                    frame_atual++;
-                     if(frame_atual >= total_frames_tatu) {
-                        frame_atual = 0;
-                    }
-                    contador_frames = 0;
-                }
-               
-
-             //Homem peba
-               
-                
-                
-                if(counts - ultimo_spawn >= cooldown && indice_tatu < LIMITE ) {
-                    homem_tatus[indice_tatu].monstro = sprite_tatu;
-                    homem_tatus[indice_tatu].velocidade = 2;
-                    homem_tatus[indice_tatu].vida = 3;
-                    homem_tatus[indice_tatu].dano = 1;
-                    homem_tatus[indice_tatu].vivo = 1;
-                    
-                    int spawn = rand() % 3;
-
-                    switch (spawn)
-                    {
-                    case 0:
-                        homem_tatus[indice_tatu].posx = 80;
-                        homem_tatus[indice_tatu].posy = ALTURA/2;
-                        break;
-                    case 1:
-                        homem_tatus[indice_tatu].posx = LARGURA-80;
-                        homem_tatus[indice_tatu].posy = ALTURA/2;
-                        break;
-                    case 2:
-                        homem_tatus[indice_tatu].posx = LARGURA/2;
-                        homem_tatus[indice_tatu].posy = 50;
-                        break;
-                    case 3:
-                        homem_tatus[indice_tatu].posx = LARGURA/2;
-                        homem_tatus[indice_tatu].posy = 680;
-                        break;
-                    
-                    default:
-                        break;
-                    }
-                    
-                    ultimo_spawn = counts;
-                    indice_tatu++;
-                } 
-
-                //Logica tatu
-                for(int i = 0; i < indice_tatu; i++) {
-                    if(homem_tatus[i].posx < canga.posx) {
-                        homem_tatus[i].posx += homem_tatus[i].velocidade;
-                    }
-                    if(homem_tatus[i].posy < canga.posy) {
-                        homem_tatus[i].posy += homem_tatus[i].velocidade;
-                    }
-                    if(homem_tatus[i].posx > canga.posx) {
-                        homem_tatus[i].posx -= homem_tatus[i].velocidade;
-                    }
-                    if(homem_tatus[i].posy > canga.posy) {
-                        homem_tatus[i].posy -= homem_tatus[i].velocidade;
-                    }
-                }
-
-            
-            
 
             // --- DESENHO (RENDERIZAÇÃO) ---
             al_clear_to_color(al_map_rgb(0, 0, 0)); 
@@ -323,49 +212,6 @@ int main() {
             al_draw_bitmap(canga.personagem, canga.posx, canga.posy, 0);
             
             al_draw_rectangle(canga.posx+10, canga.posy+10, canga.posx + 55, canga.posy + 55, al_map_rgb(255, 0, 0), 3);
-
-            //Desenho do timer
-            al_draw_text(font, al_map_rgb(0, 0, 0), 1150, 30, 0, tempo);
-
-            //Desenho homem tatu
-
-            for(int i = 0; i < indice_tatu; i++) {
-                if(homem_tatus[i].vivo) {
-                    int png_x = frame_atual * INIMIGO_LARGURA;
-                    int png_y = 0;
-
-                   if(homem_tatus[i].posx > LARGURA/2 || homem_tatus[i].posx > canga.posx) {
-                     al_draw_bitmap_region(
-                        homem_tatus[i].monstro,
-                        png_x,
-                        png_y,
-                        INIMIGO_LARGURA,
-                        INIMIGO_ALTURA,
-                        homem_tatus[i].posx,
-                        homem_tatus[i].posy,
-                        0
-                    );
-                   } else if(homem_tatus[i].posx <= LARGURA/2 || homem_tatus[i].posx < canga.posx) {
-                         al_draw_bitmap_region(
-                        homem_tatus[i].monstro,
-                        png_x,
-                        png_y,
-                        INIMIGO_LARGURA,
-                        INIMIGO_ALTURA,
-                        homem_tatus[i].posx,
-                        homem_tatus[i].posy,
-                        ALLEGRO_FLIP_HORIZONTAL
-                    );
-                   }
-                   
-                }
-
-            }
-
-            al_draw_filled_circle(80, ALTURA/2, 15, al_map_rgb(255,0,0));
-            al_draw_filled_circle(LARGURA-80, ALTURA/2, 15, al_map_rgb(255,0,0));
-            al_draw_filled_circle(LARGURA/2, 50, 15, al_map_rgb(255,0,0));
-            al_draw_filled_circle(LARGURA/2, 680, 15, al_map_rgb(255,0,0));
             
             // Desenha apenas as balas ATIVAS
             for (int i = 0; i < cont; i++) {
