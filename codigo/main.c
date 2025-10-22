@@ -21,9 +21,12 @@
 #define VEL_JOGADOR 3 // Em pixels
 #define VEL_BALA 10   // Em frames
 
+#define VELOCIDADE 3
 #define LARGURA 1280
 #define ALTURA 720
 #define FPS 60
+
+typedef enum { CIMA, BAIXO, DIREITA, ESQUERDA } Direcoes;
 
 typedef struct {
     bool cima;
@@ -41,17 +44,46 @@ typedef struct {
     ALLEGRO_BITMAP *sprite;
     int x;
     int y;
+    MapaDirecoes direcoes;
+} Bala;
+
+typedef struct {
+    int posx;
+    int posy;
+    ALLEGRO_BITMAP *monstro;
+    int vida;
+    int dano;
+    int velocidade;
+    int vivo;
+} Homem_tatu;
+
+typedef struct {
+    ALLEGRO_BITMAP *sprite;
+    int x;
+    int y;
     MapaDirecoes movimento;
     MapaDirecoes mira;
     Arma arma;
 } Jogador;
 
 typedef struct {
+    int movimento;
+    int posx;
+    int posy;
+    bool ativa;
+} BalaInimigo;
+
+typedef struct {
+    float posx;
+    float posy;
     ALLEGRO_BITMAP *sprite;
-    int x;
-    int y;
-    MapaDirecoes direcoes;
-} Bala;
+    int vida;
+    int dano;
+    float velocidade;
+    int vivo;
+    int ultimo_disparo;
+
+} Formiga;
 
 void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas) {
     if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
@@ -212,6 +244,320 @@ void mover_balas(Bala *balas, int quant_balas) {
     }
 }
 
+void frames(int *contador_frames, int frame_delay, int *frame_atual_tatu,
+            int *frame_atual_formiga, int total_frames_tatu,
+            int total_frames_formiga) {
+    (*contador_frames)++;
+
+    if (*contador_frames >= frame_delay) {
+        (*frame_atual_tatu)++;
+        (*frame_atual_formiga)++;
+        if (*frame_atual_tatu >= total_frames_tatu) {
+            *frame_atual_tatu = 0;
+        }
+        if (*frame_atual_formiga >= total_frames_formiga) {
+            *frame_atual_formiga = 0;
+        }
+        *contador_frames = 0;
+    }
+}
+
+// Lógica do inimigo tatu
+
+void criarTatu(Homem_tatu homem_tatus[], double *counts, float *ultimo_spawn,
+               int cooldown, int *indice_tatu, ALLEGRO_BITMAP *sprite_tatu) {
+
+    if (*counts - *ultimo_spawn >= cooldown && *indice_tatu < 50) {
+        homem_tatus[*indice_tatu].monstro = sprite_tatu;
+        homem_tatus[*indice_tatu].velocidade = 1;
+        homem_tatus[*indice_tatu].vida = 3;
+        homem_tatus[*indice_tatu].dano = 1;
+        homem_tatus[*indice_tatu].vivo = 1;
+
+        int spawn = rand() % 3;
+
+        switch (spawn) {
+        case 0:
+            homem_tatus[*indice_tatu].posx = 80;
+            homem_tatus[*indice_tatu].posy = ALTURA / 2;
+            break;
+        case 1:
+            homem_tatus[*indice_tatu].posx = LARGURA - 80;
+            homem_tatus[*indice_tatu].posy = ALTURA / 2;
+            break;
+        case 2:
+            homem_tatus[*indice_tatu].posx = LARGURA / 2;
+            homem_tatus[*indice_tatu].posy = 50;
+            break;
+        case 3:
+            homem_tatus[*indice_tatu].posx = LARGURA / 2;
+            homem_tatus[*indice_tatu].posy = 680;
+            break;
+
+        default:
+            break;
+        }
+
+        *ultimo_spawn = *counts;
+        (*indice_tatu)++;
+    }
+}
+
+void logicaTatu(Homem_tatu homem_tatus[], int *indice_tatu, Jogador canga) {
+    for (int i = 0; i < *indice_tatu; i++) {
+        if (homem_tatus[i].posx < canga.x) {
+            homem_tatus[i].posx += homem_tatus[i].velocidade;
+        }
+        if (homem_tatus[i].posy < canga.y) {
+            homem_tatus[i].posy += homem_tatus[i].velocidade;
+        }
+        if (homem_tatus[i].posx > canga.x) {
+            homem_tatus[i].posx -= homem_tatus[i].velocidade;
+        }
+        if (homem_tatus[i].posy > canga.y) {
+            homem_tatus[i].posy -= homem_tatus[i].velocidade;
+        }
+    }
+}
+
+void colisaoTatu(Homem_tatu homem_tatus[], int *indice_tatu) {
+    for (int i = 0; i < *indice_tatu; i++) {
+        if (!homem_tatus[i].vivo)
+            continue;
+        for (int j = 0; j < *indice_tatu; j++) {
+            if (!homem_tatus[i].vivo)
+                continue;
+            int colisao_x = 64;
+            int colisao_y = 64;
+            if (abs(homem_tatus[i].posx - homem_tatus[j].posx) <= colisao_x &&
+                abs(homem_tatus[i].posy - homem_tatus[j].posy) <= colisao_y) {
+                if (homem_tatus[i].posx < homem_tatus[j].posx) {
+                    homem_tatus[i].posx -= homem_tatus[i].velocidade;
+                    homem_tatus[j].posx += homem_tatus[j].velocidade;
+                } else {
+                    homem_tatus[i].posx += homem_tatus[i].velocidade;
+                    homem_tatus[j].posx -= homem_tatus[j].velocidade;
+                }
+                if (homem_tatus[i].posy < homem_tatus[j].posx) {
+                    homem_tatus[i].posy -= homem_tatus[i].velocidade;
+                    homem_tatus[j].posy += homem_tatus[j].velocidade;
+                } else {
+                    homem_tatus[i].posy += homem_tatus[i].velocidade;
+                    homem_tatus[j].posy -= homem_tatus[j].velocidade;
+                }
+            }
+        }
+    }
+}
+
+void desenhoTatu(Homem_tatu homem_tatus[], int frame_atual_tatu,
+                 int indice_tatu, Jogador canga) {
+    for (int i = 0; i < indice_tatu; i++) {
+        if (homem_tatus[i].vivo) {
+            int png_x = frame_atual_tatu * 64;
+            int png_y = 0;
+            int flip = 0;
+
+            if (homem_tatus[i].posx < canga.x) {
+                flip = ALLEGRO_FLIP_HORIZONTAL;
+            }
+
+            al_draw_bitmap_region(homem_tatus[i].monstro, png_x, png_y, 64, 64,
+                                  homem_tatus[i].posx, homem_tatus[i].posy,
+                                  flip);
+        }
+    }
+}
+
+// Lógica do inimigo formiga
+void criacaoFormiga(Formiga formigas[], double *counts,
+                    ALLEGRO_BITMAP *sprite_formiga, float *ultimo_spawn_formiga,
+                    float cooldown_formiga, int *indice_formiga) {
+
+    if (*counts - *ultimo_spawn_formiga >= cooldown_formiga &&
+        *indice_formiga < 50) {
+        formigas[*indice_formiga].dano = 1;
+        formigas[*indice_formiga].vida = 2;
+        formigas[*indice_formiga].velocidade = 0.5;
+        formigas[*indice_formiga].vivo = 1;
+        formigas[*indice_formiga].sprite = sprite_formiga;
+        formigas[*indice_formiga].ultimo_disparo = 0;
+
+        int spawn = rand() % 3;
+
+        switch (spawn) {
+        case 0:
+            formigas[*indice_formiga].posx = 80;
+            formigas[*indice_formiga].posy = ALTURA / 2;
+            break;
+        case 1:
+            formigas[*indice_formiga].posx = LARGURA - 80;
+            formigas[*indice_formiga].posy = ALTURA / 2;
+            break;
+        case 2:
+            formigas[*indice_formiga].posx = LARGURA / 2;
+            formigas[*indice_formiga].posy = 50;
+            break;
+        case 3:
+            formigas[*indice_formiga].posx = LARGURA / 2;
+            formigas[*indice_formiga].posy = 680;
+            break;
+
+        default:
+            break;
+        }
+        *ultimo_spawn_formiga = (float)*counts;
+        (*indice_formiga)++;
+    }
+}
+
+void logicaFormiga(Formiga formigas[], BalaInimigo formiga_bala[],
+                   int *indice_formiga, Jogador canga, double *counts,
+                   int disparo_cooldown, int *cont_disparo) {
+    // logica formiga
+    for (int i = 0; i < *indice_formiga; i++) {
+        if (formigas[i].vivo) {
+            if (formigas[i].posx > 10 && formigas[i].posx < 1270) {
+                if (formigas[i].posx >= canga.x - 150) {
+                    formigas[i].posx -= formigas[i].velocidade;
+                } else {
+                    formigas[i].posx += formigas[i].velocidade;
+                }
+                if (formigas[i].posx <= canga.x + 150) {
+                    formigas[i].posx += formigas[i].velocidade;
+                } else {
+                    formigas[i].posx -= formigas[i].velocidade;
+                }
+                if (formigas[i].posy >= canga.y - 100) {
+                    formigas[i].posy -= formigas[i].velocidade;
+                } else {
+                    formigas[i].posy += formigas[i].velocidade;
+                }
+                if (formigas[i].posy <= canga.y + 100) {
+                    formigas[i].posy += formigas[i].velocidade;
+                } else {
+                    formigas[i].posy -= formigas[i].velocidade;
+                }
+            }
+            if (*counts - formigas[i].ultimo_disparo >= disparo_cooldown &&
+                *cont_disparo < 2000) {
+                BalaInimigo *bala_formiga = &formiga_bala[*cont_disparo];
+                bala_formiga->ativa = true;
+
+                if (canga.x < formigas[i].posx - 48) {
+                    bala_formiga->movimento = ESQUERDA;
+                } else if (canga.x > formigas[i].posx + 48) {
+                    bala_formiga->movimento = DIREITA;
+                } else if (canga.y > formigas[i].posy - 48) {
+                    bala_formiga->movimento = BAIXO;
+                } else if (canga.y < formigas[i].posy - 48) {
+                    bala_formiga->movimento = CIMA;
+                }
+
+                bala_formiga->posx = formigas[i].posx + 30;
+                bala_formiga->posy = formigas[i].posy + 20;
+                formigas[i].ultimo_disparo = *counts;
+                (*cont_disparo)++;
+            }
+        }
+    }
+}
+
+void logicaBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo) {
+    int velocidade_bala = 3;
+    for (int i = 0; i < *cont_disparo; i++) {
+        if (formiga_bala[i].ativa) {
+            if (formiga_bala[i].movimento == CIMA) {
+                formiga_bala[i].posy -= velocidade_bala;
+            } else if (formiga_bala[i].movimento == BAIXO) {
+                formiga_bala[i].posy += velocidade_bala;
+            } else if (formiga_bala[i].movimento == DIREITA) {
+                formiga_bala[i].posx += velocidade_bala;
+            } else if (formiga_bala[i].movimento == ESQUERDA) {
+                formiga_bala[i].posx -= velocidade_bala;
+            }
+
+            if (formiga_bala[i].posx < 0 || formiga_bala[i].posx > LARGURA ||
+                formiga_bala[i].posy < 0 || formiga_bala[i].posy > ALTURA) {
+                formiga_bala[i].ativa = false;
+            }
+        }
+    }
+}
+
+void colisaoFormiga(Formiga formigas[], int *indice_formiga) {
+    for (int i = 0; i < *indice_formiga; i++) {
+        if (!formigas[i].vivo)
+            continue;
+        for (int j = 0; j < *indice_formiga; j++) {
+            if (!formigas[j].vivo)
+                continue;
+            int colisao_x = 48;
+            int colisao_y = 48;
+            if (abs(formigas[i].posx - formigas[j].posx) <= colisao_x &&
+                abs(formigas[i].posy - formigas[j].posy) <= colisao_y) {
+                if (formigas[i].posx < formigas[j].posx) {
+                    formigas[i].posx -= formigas[i].velocidade;
+                    formigas[j].posx += formigas[j].velocidade;
+                } else {
+                    formigas[i].posx += formigas[i].velocidade;
+                    formigas[j].posx -= formigas[j].velocidade;
+                }
+                if (formigas[i].posy < formigas[j].posx) {
+                    formigas[i].posy -= formigas[i].velocidade;
+                    formigas[j].posy += formigas[j].velocidade;
+                } else {
+                    formigas[i].posy += formigas[i].velocidade;
+                    formigas[j].posy -= formigas[j].velocidade;
+                }
+            }
+        }
+    }
+}
+
+void desenhoFormiga(Formiga formigas[], int indice_formiga,
+                    int frame_atual_formiga, Jogador canga,
+                    BalaInimigo formiga_bala[], int cont_disparo) {
+    for (int i = 0; i < indice_formiga; i++) {
+        if (formigas[i].vivo) {
+            int png_x = frame_atual_formiga * 48;
+            int png_y = 0;
+            int flip = 0;
+
+            if (formigas[i].posx > canga.x) {
+                flip = ALLEGRO_FLIP_HORIZONTAL;
+            }
+
+            al_draw_bitmap_region(formigas[i].sprite, png_x, png_y, 48, 48,
+                                  formigas[i].posx, formigas[i].posy, flip);
+        }
+    }
+    for (int i = 0; i < cont_disparo; i++) {
+        if (formiga_bala[i].ativa) {
+            al_draw_filled_circle(formiga_bala[i].posx, formiga_bala[i].posy, 5,
+                                  al_map_rgb(0, 0, 0));
+        }
+    }
+}
+
+void efetuar_movimento(MapaDirecoes teclas, Jogador *jogador) {
+    if (teclas.cima && jogador->y > 0) {
+        jogador->y -= VELOCIDADE;
+    }
+
+    if (teclas.baixo && jogador->y < ALTURA) {
+        jogador->y += VELOCIDADE;
+    }
+
+    if (teclas.esq && jogador->x > 0) {
+        jogador->x -= VELOCIDADE;
+    }
+
+    if (teclas.dir && jogador->x < LARGURA) {
+        jogador->x += VELOCIDADE;
+    }
+}
+
 int main() {
     // ----------
     // Inicialização
@@ -221,6 +567,7 @@ int main() {
     al_init_font_addon();
     al_init_ttf_addon();
     al_init_native_dialog_addon();
+    al_init_primitives_addon();
     al_install_keyboard();
 
     ALLEGRO_DISPLAY *tela = al_create_display(LARGURA, ALTURA);
@@ -241,6 +588,44 @@ int main() {
                      {false, false, false, false},
                      {false, false, false, false},
                      {60, 0}};
+
+    //---------
+    // Inimigos
+    //---------
+    // Homem tatu
+    Homem_tatu *homem_tatus = (Homem_tatu *)malloc(50 * sizeof(Homem_tatu));
+    ALLEGRO_BITMAP *sprite_tatu =
+        al_load_bitmap("./materiais/sprites/peba2_1.png");
+    // inicialização tatu
+    int indice_tatu = 0;
+    float ultimo_spawn_tatu = 0;
+    const float cooldown_tatu = 2;
+    // fim tatu
+
+    // formiga
+    BalaInimigo *formiga_bala =
+        (BalaInimigo *)malloc(2000 * sizeof(BalaInimigo));
+    Formiga *formigas = (Formiga *)malloc(50 * sizeof(Formiga));
+    ALLEGRO_BITMAP *sprite_formiga =
+        al_load_bitmap("./materiais/sprites/formiga2.png");
+    // Inicialização formiga
+    int indice_formiga = 0;
+    float ultimo_spawn_formiga = 0;
+    const float cooldown_formiga = 5;
+    const float disparo_cooldown = 2;
+    int cont_disparo = 0;
+    // fim formiga
+
+    // para animação
+    int contador_frames = 0;
+    const int frame_delay = 10;
+    int frame_atual_formiga = 0;
+    const int total_frames_formiga = 2;
+    const int total_frames_tatu = 2;
+    int frame_atual_tatu = 0;
+    // fim da parte de animação
+
+    //----------
 
     int quant_balas = 0;
     Bala *balas = NULL;
@@ -264,6 +649,35 @@ int main() {
 
         if (evento.type == ALLEGRO_EVENT_TIMER) {
             gerar_bala(evento, &balas, &quant_balas, &canga, tick_timer);
+        }
+
+        if (evento.type == ALLEGRO_EVENT_TIMER) {
+            efetuar_movimento(canga.movimento, &canga);
+
+            //--------
+            // Inimigos
+            //--------
+            double tempo_timer = al_get_timer_count(tick_timer);
+            double tempo_em_segundos = tempo_timer / 60;
+            frames(&contador_frames, frame_delay, &frame_atual_tatu,
+                   &frame_atual_formiga, total_frames_tatu,
+                   total_frames_formiga);
+
+            // tatu
+            criarTatu(homem_tatus, &tempo_em_segundos, &ultimo_spawn_tatu,
+                      cooldown_tatu, &indice_tatu, sprite_tatu);
+            logicaTatu(homem_tatus, &indice_tatu, canga);
+            colisaoTatu(homem_tatus, &indice_tatu);
+
+            // formiga
+            criacaoFormiga(formigas, &tempo_em_segundos, sprite_formiga,
+                           &ultimo_spawn_formiga, cooldown_formiga,
+                           &indice_formiga);
+            logicaFormiga(formigas, formiga_bala, &indice_formiga, canga,
+                          &tempo_em_segundos, disparo_cooldown, &cont_disparo);
+            logicaBalaFormiga(formiga_bala, &cont_disparo);
+            colisaoFormiga(formigas, &indice_formiga);
+            //---------
 
             // ----------
             // Frames
@@ -272,10 +686,26 @@ int main() {
             mover_balas(balas, quant_balas);
             mover_jogador(canga.movimento, &canga);
 
+            // Desenho inimigos
+            desenhoTatu(homem_tatus, frame_atual_tatu, indice_tatu, canga);
+            desenhoFormiga(formigas, indice_formiga, frame_atual_formiga, canga,
+                           formiga_bala, cont_disparo);
+
             al_flip_display();
         }
     }
 
     al_destroy_display(tela);
+    al_destroy_bitmap(canga.sprite);
+    al_destroy_bitmap(sprite_formiga);
+    al_destroy_bitmap(sprite_tatu);
+    al_destroy_bitmap(cenario);
+    al_destroy_timer(tick_timer);
+    al_destroy_event_queue(fila);
+
+    free(formiga_bala);
+    free(formigas);
+    free(homem_tatus);
+
     return 0;
 }
