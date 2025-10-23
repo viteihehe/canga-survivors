@@ -73,44 +73,41 @@ void renderizar_mapa() {
     }
 }
 
-int esta_colidindo_cenario(int x, int y) {
+int esta_colidindo_cenario(int x, int y, int tam_box) {
+    tam_box /= 2; // Tem que ser sempre a metade pra centralizar
+    tam_box -= 1; // Pixelzinho só pra não ficar sempre justo
+
     int cel_x;
     int cel_y;
 
-    int espaco_box = 23;
-
     // Superior Esquerdo
-    cel_x = (x - espaco_box) / TAM_QUADRADOS;
-    cel_y = (y - espaco_box) / TAM_QUADRADOS;
-    al_draw_filled_circle(x - espaco_box, y - espaco_box, 3,
-                          al_map_rgb(0, 255, 0));
+    cel_x = (x - tam_box) / TAM_QUADRADOS;
+    cel_y = (y - tam_box) / TAM_QUADRADOS;
+    al_draw_filled_circle(x - tam_box, y - tam_box, 3, al_map_rgb(0, 255, 0));
     if (mapa_inicial[cel_y][cel_x] == 1) {
         return 1;
     }
 
     // Superior Direito
-    cel_x = (x + espaco_box) / TAM_QUADRADOS;
-    cel_y = (y - espaco_box) / TAM_QUADRADOS;
-    al_draw_filled_circle(x + espaco_box, y - espaco_box, 3,
-                          al_map_rgb(0, 255, 0));
+    cel_x = (x + tam_box) / TAM_QUADRADOS;
+    cel_y = (y - tam_box) / TAM_QUADRADOS;
+    al_draw_filled_circle(x + tam_box, y - tam_box, 3, al_map_rgb(0, 255, 0));
     if (mapa_inicial[cel_y][cel_x] == 1) {
         return 1;
     }
 
     // Inferior Esquerdo
-    cel_x = (x - espaco_box) / TAM_QUADRADOS;
-    cel_y = (y + espaco_box) / TAM_QUADRADOS;
-    al_draw_filled_circle(x - espaco_box, y + espaco_box, 3,
-                          al_map_rgb(0, 255, 0));
+    cel_x = (x - tam_box) / TAM_QUADRADOS;
+    cel_y = (y + tam_box) / TAM_QUADRADOS;
+    al_draw_filled_circle(x - tam_box, y + tam_box, 3, al_map_rgb(0, 255, 0));
     if (mapa_inicial[cel_y][cel_x] == 1) {
         return 1;
     }
 
     // Inferior Direito
-    cel_x = (x + espaco_box) / TAM_QUADRADOS;
-    cel_y = (y + espaco_box) / TAM_QUADRADOS;
-    al_draw_filled_circle(x + espaco_box, y + espaco_box, 3,
-                          al_map_rgb(0, 255, 0));
+    cel_x = (x + tam_box) / TAM_QUADRADOS;
+    cel_y = (y + tam_box) / TAM_QUADRADOS;
+    al_draw_filled_circle(x + tam_box, y + tam_box, 3, al_map_rgb(0, 255, 0));
     if (mapa_inicial[cel_y][cel_x] == 1) {
         return 1;
     }
@@ -135,6 +132,7 @@ typedef struct {
     int x;
     int y;
     MapaDirecoes direcoes;
+    bool ativa;
 } Bala;
 
 typedef struct {
@@ -280,11 +278,11 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
     }
 
     // Checando se dá pra mover
-    if (!esta_colidindo_cenario(jogador->x, y_futuro)) {
+    if (!esta_colidindo_cenario(jogador->x, y_futuro, 40)) {
         jogador->y = y_futuro;
     }
 
-    if (!esta_colidindo_cenario(x_futuro, jogador->y)) {
+    if (!esta_colidindo_cenario(x_futuro, jogador->y, 40)) {
         jogador->x = x_futuro;
     }
 
@@ -313,7 +311,7 @@ void gerar_bala(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
     }
 
     Bala bala_temp = {al_load_bitmap("./materiais/sprites/bala.png"),
-                      jogador->x, jogador->y, jogador->mira};
+                      jogador->x, jogador->y, jogador->mira, true};
 
     (*dest_quant)++;
     *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
@@ -325,6 +323,10 @@ void gerar_bala(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
 
 void mover_balas(Bala *balas, int quant_balas) {
     for (int i = 0; i < quant_balas; i++) {
+        if (!balas[i].ativa) {
+            continue;
+        }
+
         if (balas[i].direcoes.cima) {
             balas[i].y -= VEL_BALA;
         }
@@ -339,6 +341,11 @@ void mover_balas(Bala *balas, int quant_balas) {
 
         if (balas[i].direcoes.dir) {
             balas[i].x += VEL_BALA;
+        }
+
+        if (esta_colidindo_cenario(balas[i].x, balas[i].y, 12)) {
+            balas[i].ativa = false;
+            return;
         }
 
         al_draw_bitmap(balas[i].sprite, balas[i].x - 8, balas[i].y - 8,
@@ -670,7 +677,7 @@ int main() {
                      LARGURA / 2,
                      {false, false, false, false},
                      {false, false, false, false},
-                     {60, 0}};
+                     {30, 0}};
 
     int quant_balas = 0;
     Bala *balas = NULL;
