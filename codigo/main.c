@@ -52,7 +52,10 @@ int mapa_inicial[MAPA_LINHAS][MAPA_COLUNAS] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 };
 
-void renderizar_mapa() {
+/*
+    Uma função cujo único propósito é redesenhar o cenário.
+*/
+void redesenhar_mapa() {
     for (int lin = 0; lin < MAPA_LINHAS; lin++) {
         for (int col = 0; col < MAPA_COLUNAS; col++) {
             int x = col * TAM_QUADRADOS;
@@ -73,7 +76,12 @@ void renderizar_mapa() {
     }
 }
 
-int esta_colidindo_cenario(int x, int y, int tam_box) {
+/*
+    Uma função que recebe um par de coordenadas, o tamanho de uma bounding box
+   quadrada e retorna um booleano dizendo se a box toca em alguma peça do
+   cenário ou não.
+*/
+int colide_no_cenario(int x, int y, int tam_box) {
     tam_box /= 2; // Tem que ser sempre a metade pra centralizar
     tam_box -= 1; // Pixelzinho só pra não ficar sempre justo
 
@@ -172,6 +180,9 @@ typedef struct {
     int ultimo_disparo;
 } Formiga;
 
+/*
+    Uma função cujo propósito é atualizar o estado das teclas WASD do jogador.
+*/
 void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas) {
     if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
         switch (evento.keyboard.keycode) {
@@ -214,6 +225,9 @@ void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas) {
     }
 }
 
+/*
+    Uma função cujo propósito é atualizar o estado das teclas seta do jogador.
+*/
 void capturar_mira(ALLEGRO_EVENT evento, MapaDirecoes *teclas) {
     if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
         switch (evento.keyboard.keycode) {
@@ -256,6 +270,12 @@ void capturar_mira(ALLEGRO_EVENT evento, MapaDirecoes *teclas) {
     }
 }
 
+/*
+    Uma função cujo propósito é atualizar e redesenhar, se possível, a posição
+   do jogador na tela.
+
+   TODO: Mover a parte do redesenho para uma função dedicada.
+*/
 void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
     int x_futuro = jogador->x;
     int y_futuro = jogador->y;
@@ -278,11 +298,11 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
     }
 
     // Checando se dá pra mover
-    if (!esta_colidindo_cenario(jogador->x, y_futuro, 40)) {
+    if (!colide_no_cenario(jogador->x, y_futuro, 40)) {
         jogador->y = y_futuro;
     }
 
-    if (!esta_colidindo_cenario(x_futuro, jogador->y, 40)) {
+    if (!colide_no_cenario(x_futuro, jogador->y, 40)) {
         jogador->x = x_futuro;
     }
 
@@ -290,9 +310,15 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
                    ALLEGRO_FLIP_HORIZONTAL);
 }
 
-void gerar_bala(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
-                Jogador *jogador, ALLEGRO_TIMER *tick_timer) {
+/*
+    Uma função cujo propósito é gerar adicionar, se possível, uma nova bala do
+   jogador na memória e atualizar o timestamp do último tiro.
 
+    A função também exporta a quantidade de balas para fora por meio do
+   argumento `dest_quant`.
+*/
+void criar_bala_jogador(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
+                        Jogador *jogador, ALLEGRO_TIMER *tick_timer) {
     // O jogador tem que estar mirando em alguma direção
     if (!(jogador->mira.cima || jogador->mira.baixo || jogador->mira.esq ||
           jogador->mira.dir)) {
@@ -321,6 +347,12 @@ void gerar_bala(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
         al_get_timer_count(tick_timer) + jogador->arma.tempo_resfriamento;
 }
 
+/*
+    Uma função cujo propósito é atualizar a posição das balas e redesenhar todo
+   tick.
+
+    TODO: Mover a parte de redesenhar para uma função dedicada;
+*/
 void mover_balas(Bala *balas, int quant_balas) {
     for (int i = 0; i < quant_balas; i++) {
         if (!balas[i].ativa) {
@@ -343,7 +375,7 @@ void mover_balas(Bala *balas, int quant_balas) {
             balas[i].x += VEL_BALA;
         }
 
-        if (esta_colidindo_cenario(balas[i].x, balas[i].y, 12)) {
+        if (colide_no_cenario(balas[i].x, balas[i].y, 12)) {
             balas[i].ativa = false;
             return;
         }
@@ -739,7 +771,8 @@ int main() {
         }
 
         if (evento.type == ALLEGRO_EVENT_TIMER) {
-            gerar_bala(evento, &balas, &quant_balas, &canga, tick_timer);
+            criar_bala_jogador(evento, &balas, &quant_balas, &canga,
+                               tick_timer);
 
             //--------
             // Inimigos
@@ -773,7 +806,7 @@ int main() {
             // al_draw_bitmap(cenario, 0, 0, ALLEGRO_FLIP_HORIZONTAL);
             al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
                                      al_map_rgb(0, 0, 0));
-            renderizar_mapa();
+            redesenhar_mapa();
 
             mover_jogador(canga.movimento, &canga);
             desenhoTatu(homem_tatus, frame_atual_tatu, indice_tatu, canga);
