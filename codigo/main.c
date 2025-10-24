@@ -23,33 +23,39 @@
 #define VEL_BALA 10   // Em frames
 
 #define VELOCIDADE 3
-#define LARGURA 768
+#define LARGURA 960
 #define ALTURA 768
 #define FPS 60
 
 #define MAPA_LINHAS 16
-#define MAPA_COLUNAS 16
+#define MAPA_COLUNAS 20
 #define TAM_QUADRADOS 48
 
 typedef enum { CIMA, BAIXO, DIREITA, ESQUERDA } Direcoes;
 
+enum EBloco {
+    N, // Nada
+    C, // Cacto
+    P, // Pedra
+};
+
 int mapa_inicial[MAPA_LINHAS][MAPA_COLUNAS] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1},
-    {1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1},
-    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1},
-    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1},
-    {1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+    {C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C},
+    {C, N, N, N, P, N, N, N, N, N, N, N, N, N, N, N, P, P, P, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, C},
+    {C, N, C, N, N, N, N, N, C, N, N, N, N, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, C},
+    {C, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, N, N, N, C},
+    {C, N, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, C},
+    {C, N, P, P, N, N, N, N, N, N, N, P, N, N, N, N, N, N, N, C},
+    {C, N, P, N, N, N, P, N, N, N, N, P, P, N, N, N, N, N, N, C},
+    {C, N, N, N, N, N, N, N, N, N, P, P, P, N, N, N, N, N, N, C},
+    {C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C, C},
 };
 
 /*
@@ -61,16 +67,24 @@ void redesenhar_mapa() {
             int x = col * TAM_QUADRADOS;
             int y = lin * TAM_QUADRADOS;
 
-            if (mapa_inicial[lin][col] == 1) {
+            switch (mapa_inicial[lin][col]) {
+            case N:
                 al_draw_filled_rectangle(x, y, x + TAM_QUADRADOS,
                                          y + TAM_QUADRADOS,
-                                         al_map_rgb(255, 100, 100));
-            }
+                                         al_map_rgb(246, 215, 176));
+                break;
 
-            else {
+            case C:
+                al_draw_filled_rectangle(x, y, x + TAM_QUADRADOS,
+                                         y + TAM_QUADRADOS,
+                                         al_map_rgb(70, 106, 57));
+                break;
+
+            case P:
                 al_draw_filled_rectangle(x, y, x + TAM_QUADRADOS,
                                          y + TAM_QUADRADOS,
                                          al_map_rgb(100, 100, 100));
+                break;
             }
         }
     }
@@ -92,7 +106,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_x = (x - tam_box) / TAM_QUADRADOS;
     cel_y = (y - tam_box) / TAM_QUADRADOS;
     al_draw_filled_circle(x - tam_box, y - tam_box, 3, al_map_rgb(0, 255, 0));
-    if (mapa_inicial[cel_y][cel_x] == 1) {
+    if (mapa_inicial[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -100,7 +114,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_x = (x + tam_box) / TAM_QUADRADOS;
     cel_y = (y - tam_box) / TAM_QUADRADOS;
     al_draw_filled_circle(x + tam_box, y - tam_box, 3, al_map_rgb(0, 255, 0));
-    if (mapa_inicial[cel_y][cel_x] == 1) {
+    if (mapa_inicial[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -108,7 +122,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_x = (x - tam_box) / TAM_QUADRADOS;
     cel_y = (y + tam_box) / TAM_QUADRADOS;
     al_draw_filled_circle(x - tam_box, y + tam_box, 3, al_map_rgb(0, 255, 0));
-    if (mapa_inicial[cel_y][cel_x] == 1) {
+    if (mapa_inicial[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -116,7 +130,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_x = (x + tam_box) / TAM_QUADRADOS;
     cel_y = (y + tam_box) / TAM_QUADRADOS;
     al_draw_filled_circle(x + tam_box, y + tam_box, 3, al_map_rgb(0, 255, 0));
-    if (mapa_inicial[cel_y][cel_x] == 1) {
+    if (mapa_inicial[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -705,8 +719,8 @@ int main() {
     // Jogador
     // ----------
     Jogador canga = {al_load_bitmap("./materiais/sprites/canga2.png"),
-                     ALTURA / 2,
                      LARGURA / 2,
+                     ALTURA / 2,
                      {false, false, false, false},
                      {false, false, false, false},
                      {30, 0}};
