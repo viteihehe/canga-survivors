@@ -68,6 +68,7 @@ typedef struct {
     ALLEGRO_BITMAP *arbusto;
 
     ALLEGRO_BITMAP *sombra;
+    ALLEGRO_BITMAP *bala;
 } FolhaSprites;
 
 /*
@@ -361,8 +362,8 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
     A função também exporta a quantidade de balas para fora por meio do
    argumento `dest_quant`.
 */
-void criar_bala_jogador(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
-                        Jogador *jogador, ALLEGRO_TIMER *tick_timer) {
+void criar_bala_jogador(Bala **balas, int *dest_quant, Jogador *jogador,
+                        ALLEGRO_TIMER *tick_timer, FolhaSprites sprites) {
     // O jogador tem que estar mirando em alguma direção
     if (!(jogador->mira.cima || jogador->mira.baixo || jogador->mira.esq ||
           jogador->mira.dir)) {
@@ -380,8 +381,8 @@ void criar_bala_jogador(ALLEGRO_EVENT evento, Bala **balas, int *dest_quant,
         return;
     }
 
-    Bala bala_temp = {al_load_bitmap("./materiais/sprites/bala.png"),
-                      jogador->x, jogador->y, jogador->mira, true};
+    Bala bala_temp = {sprites.bala, jogador->x, jogador->y, jogador->mira,
+                      true};
 
     (*dest_quant)++;
     *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
@@ -754,7 +755,8 @@ int main() {
         al_load_bitmap("./materiais/sprites/mapa/cacto.png"),
         al_load_bitmap("./materiais/sprites/mapa/pedra.png"),
         al_load_bitmap("./materiais/sprites/mapa/arbusto.png"),
-        al_load_bitmap("./materiais/sprites/sombra.png")};
+        al_load_bitmap("./materiais/sprites/sombra.png"),
+        al_load_bitmap("./materiais/sprites/bala.png")};
 
     // ----------
     // Jogador
@@ -820,8 +822,8 @@ int main() {
         }
 
         if (evento.type == ALLEGRO_EVENT_TIMER) {
-            criar_bala_jogador(evento, &balas, &quant_balas, &canga,
-                               tick_timer);
+            criar_bala_jogador(&balas, &quant_balas, &canga, tick_timer,
+                               sprites);
 
             //--------
             // Inimigos
