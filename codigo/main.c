@@ -228,13 +228,6 @@ typedef struct {
     int tamanho_sprite;
 } Inimigo;
 
-// Protótipos
-void colisaoInimigos(Inimigo inimigos[], int *indice, int tamanho,
-                     int tamanhosprite);
-void reajusteInimigos(Inimigo inimigos[], int *indice);
-void logicaBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo);
-void compactarBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo);
-
 /*
     Uma função cujo propósito é atualizar o estado das teclas WASD do jogador.
 */
@@ -533,6 +526,93 @@ void criarInimigo(Inimigo tatus[], Inimigo formigas[], double *counts,
     }
 }
 
+void colisaoInimigos(Inimigo inimigos[], int *indice, int tamanho,
+                     int tamanhosprite) {
+    for (int i = 0; i < *indice; i++) {
+        if (!inimigos[i].ativo)
+            continue;
+
+        if (inimigos[i].vida <= 0) {
+            inimigos[i].ativo = 0;
+            continue;
+        }
+        for (int j = i + 1; j < *indice; j++) {
+            if (!inimigos[j].ativo)
+                continue;
+            int old_x = inimigos[i].posx;
+            int old_y = inimigos[i].posy;
+            int old_x2 = inimigos[j].posx;
+            int old_y2 = inimigos[j].posy;
+            int colisao_x = tamanho;
+            int colisao_y = tamanho;
+            if (abs(inimigos[i].posx - inimigos[j].posx) <= colisao_x &&
+                abs(inimigos[i].posy - inimigos[j].posy) <= colisao_y) {
+                if (inimigos[i].posx < inimigos[j].posx) {
+                    inimigos[i].posx -= inimigos[i].velocidade;
+                    inimigos[j].posx += inimigos[j].velocidade;
+                } else {
+                    inimigos[i].posx += inimigos[i].velocidade;
+                    inimigos[j].posx -= inimigos[j].velocidade;
+                }
+                if (inimigos[i].posy < inimigos[j].posy) {
+                    inimigos[i].posy -= inimigos[i].velocidade;
+                    inimigos[j].posy += inimigos[j].velocidade;
+                } else {
+                    inimigos[i].posy += inimigos[i].velocidade;
+                    inimigos[j].posy -= inimigos[j].velocidade;
+                }
+                if (colide_no_cenario(inimigos[i].posx, inimigos[i].posy,
+                                      tamanhosprite)) {
+                    inimigos[i].posx = old_x;
+                    inimigos[i].posy = old_y;
+                }
+                if (colide_no_cenario(inimigos[j].posx, inimigos[j].posy,
+                                      tamanhosprite)) {
+                    inimigos[j].posx = old_x2;
+                    inimigos[j].posy = old_y2;
+                }
+            }
+        }
+    }
+}
+
+void compactarBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo) {
+    int bala_ativa = 0;
+    for (int i = 0; i < *cont_disparo; i++) {
+        if (formiga_bala[i].ativa) {
+            formiga_bala[bala_ativa++] = formiga_bala[i];
+        }
+    }
+    *cont_disparo = bala_ativa;
+}
+
+void logicaBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo) {
+    int velocidade_bala = 3;
+    for (int i = 0; i < *cont_disparo; i++) {
+        if (formiga_bala[i].ativa) {
+            if (formiga_bala[i].movimento == CIMA) {
+                formiga_bala[i].posy -= velocidade_bala;
+            } else if (formiga_bala[i].movimento == BAIXO) {
+                formiga_bala[i].posy += velocidade_bala;
+            }
+            if (formiga_bala[i].movimento == DIREITA) {
+                formiga_bala[i].posx += velocidade_bala;
+            } else if (formiga_bala[i].movimento == ESQUERDA) {
+                formiga_bala[i].posx -= velocidade_bala;
+            }
+
+            if (formiga_bala[i].posx < 0 || formiga_bala[i].posx > LARGURA ||
+                formiga_bala[i].posy < 0 || formiga_bala[i].posy > ALTURA) {
+                formiga_bala[i].ativa = false;
+            }
+        }
+        if (colide_no_cenario(formiga_bala[i].posx, formiga_bala[i].posy, 12)) {
+            formiga_bala[i].ativa = 0;
+        }
+    }
+    compactarBalaFormiga(formiga_bala, cont_disparo);
+}
+
 void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
                     double *counts, BalaInimigo formiga_bala[],
                     ALLEGRO_BITMAP *cuspe) {
@@ -636,56 +716,6 @@ void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
     colisaoInimigos(inimigos, indice, colisao, inimigos->tamanho_sprite);
 }
 
-void colisaoInimigos(Inimigo inimigos[], int *indice, int tamanho,
-                     int tamanhosprite) {
-    for (int i = 0; i < *indice; i++) {
-        if (!inimigos[i].ativo)
-            continue;
-
-        if (inimigos[i].vida <= 0) {
-            inimigos[i].ativo = 0;
-            continue;
-        }
-        for (int j = i + 1; j < *indice; j++) {
-            if (!inimigos[j].ativo)
-                continue;
-            int old_x = inimigos[i].posx;
-            int old_y = inimigos[i].posy;
-            int old_x2 = inimigos[j].posx;
-            int old_y2 = inimigos[j].posy;
-            int colisao_x = tamanho;
-            int colisao_y = tamanho;
-            if (abs(inimigos[i].posx - inimigos[j].posx) <= colisao_x &&
-                abs(inimigos[i].posy - inimigos[j].posy) <= colisao_y) {
-                if (inimigos[i].posx < inimigos[j].posx) {
-                    inimigos[i].posx -= inimigos[i].velocidade;
-                    inimigos[j].posx += inimigos[j].velocidade;
-                } else {
-                    inimigos[i].posx += inimigos[i].velocidade;
-                    inimigos[j].posx -= inimigos[j].velocidade;
-                }
-                if (inimigos[i].posy < inimigos[j].posy) {
-                    inimigos[i].posy -= inimigos[i].velocidade;
-                    inimigos[j].posy += inimigos[j].velocidade;
-                } else {
-                    inimigos[i].posy += inimigos[i].velocidade;
-                    inimigos[j].posy -= inimigos[j].velocidade;
-                }
-                if (colide_no_cenario(inimigos[i].posx, inimigos[i].posy,
-                                      tamanhosprite)) {
-                    inimigos[i].posx = old_x;
-                    inimigos[i].posy = old_y;
-                }
-                if (colide_no_cenario(inimigos[j].posx, inimigos[j].posy,
-                                      tamanhosprite)) {
-                    inimigos[j].posx = old_x2;
-                    inimigos[j].posy = old_y2;
-                }
-            }
-        }
-    }
-}
-
 bool verificaColisao(Bala *bala, Inimigo *inimigo, int colisao) {
     if (abs(bala->x - inimigo->posx) < colisao &&
         abs(bala->y - inimigo->posy) < colisao) {
@@ -701,6 +731,16 @@ void colisaoBalaInimigo(Bala *bala_atual, Inimigo *inimigo_atual, int colisao) {
             bala_atual->ativa = false;
         }
     }
+}
+
+void reajusteInimigos(Inimigo inimigos[], int *indice) {
+    int vivos = 0;
+    for (int i = 0; i < *indice; i++) {
+        if (inimigos[i].ativo) {
+            inimigos[vivos++] = inimigos[i];
+        }
+    }
+    *indice = vivos;
 }
 
 void processamentoBalaInimigo(Inimigo inimigos[], int *indice, Bala balas[],
@@ -722,16 +762,6 @@ void processamentoBalaInimigo(Inimigo inimigos[], int *indice, Bala balas[],
         }
     }
     reajusteInimigos(inimigos, indice);
-}
-
-void reajusteInimigos(Inimigo inimigos[], int *indice) {
-    int vivos = 0;
-    for (int i = 0; i < *indice; i++) {
-        if (inimigos[i].ativo) {
-            inimigos[vivos++] = inimigos[i];
-        }
-    }
-    *indice = vivos;
 }
 
 void desenharInimigo(Inimigo inimigos[], int indice, int *contador_frames,
@@ -766,43 +796,6 @@ void desenharInimigo(Inimigo inimigos[], int indice, int *contador_frames,
             }
         }
     }
-}
-
-void logicaBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo) {
-    int velocidade_bala = 3;
-    for (int i = 0; i < *cont_disparo; i++) {
-        if (formiga_bala[i].ativa) {
-            if (formiga_bala[i].movimento == CIMA) {
-                formiga_bala[i].posy -= velocidade_bala;
-            } else if (formiga_bala[i].movimento == BAIXO) {
-                formiga_bala[i].posy += velocidade_bala;
-            }
-            if (formiga_bala[i].movimento == DIREITA) {
-                formiga_bala[i].posx += velocidade_bala;
-            } else if (formiga_bala[i].movimento == ESQUERDA) {
-                formiga_bala[i].posx -= velocidade_bala;
-            }
-
-            if (formiga_bala[i].posx < 0 || formiga_bala[i].posx > LARGURA ||
-                formiga_bala[i].posy < 0 || formiga_bala[i].posy > ALTURA) {
-                formiga_bala[i].ativa = false;
-            }
-        }
-        if (colide_no_cenario(formiga_bala[i].posx, formiga_bala[i].posy, 12)) {
-            formiga_bala[i].ativa = 0;
-        }
-    }
-    compactarBalaFormiga(formiga_bala, cont_disparo);
-}
-
-void compactarBalaFormiga(BalaInimigo formiga_bala[], int *cont_disparo) {
-    int bala_ativa = 0;
-    for (int i = 0; i < *cont_disparo; i++) {
-        if (formiga_bala[i].ativa) {
-            formiga_bala[bala_ativa++] = formiga_bala[i];
-        }
-    }
-    *cont_disparo = bala_ativa;
 }
 
 int main() {
