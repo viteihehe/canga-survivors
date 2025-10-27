@@ -870,6 +870,12 @@ int main() {
         al_load_bitmap("./materiais/sprites/mapa/pedrinhas.png")};
 
     // ----------
+    // Janela
+    // ----------
+    al_set_display_icon(tela, sprites.cacto);
+    al_set_window_title(tela, "Lampião Survivors");
+
+    // ----------
     // Jogador
     // ----------
     Jogador canga = {};
