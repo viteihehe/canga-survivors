@@ -252,8 +252,8 @@ typedef struct {
     Ecomportamento comportamento;
     int tamanho_box;
     int ultimo_ataque;
-    float posx;
-    float posy;
+    int posx;
+    int posy;
     ALLEGRO_BITMAP *sprite;
     int vida;
     int dano;
@@ -728,8 +728,8 @@ void colisaoInimigos(Inimigo inimigos[], int *indice, int tamanho,
 
 void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao) {
     if (bala_atual->ativa && inimigo_atual->ativo) {
-        if (fabs(bala_atual->x - inimigo_atual->posx) < colisao &&
-            fabs(bala_atual->y - inimigo_atual->posy) < colisao) {
+        if (abs(bala_atual->x - inimigo_atual->posx) < colisao &&
+            abs(bala_atual->y - inimigo_atual->posy) < colisao) {
             inimigo_atual->vida -= bala_atual->dano;
             bala_atual->ativa = false;
         }
@@ -784,8 +784,8 @@ void desenharInimigo(Inimigo inimigos[], int indice, int *contador_frames,
             al_draw_bitmap_region(
                 inimigos[i].sprite, png_x, png_y, inimigos[i].tamanho_sprite,
                 inimigos[i].tamanho_sprite,
-                inimigos[i].posx - inimigos[i].tamanho_sprite / 2,
-                inimigos[i].posy - inimigos[i].tamanho_sprite / 2, flip);
+                inimigos[i].posx - inimigos[i].tamanho_sprite / 2.0,
+                inimigos[i].posy - inimigos[i].tamanho_sprite / 2.0, flip);
 
             int temp = -((inimigos[i].vida * 15) - 5) / 2;
             for (int x = 0; x < inimigos[i].vida; x++) {
@@ -840,8 +840,8 @@ void danoJogador(Inimigo inimigos[], Jogador *canga, int indice,
         if (inimigos[i].comportamento == TATU) {
             int colisaox = 40;
             int colisaoy = 40;
-            if ((fabs(inimigos[i].posx - canga->x) < colisaox) &&
-                (fabs(inimigos[i].posy - canga->y) < colisaoy) &&
+            if ((abs(inimigos[i].posx - canga->x) < colisaox) &&
+                (abs(inimigos[i].posy - canga->y) < colisaoy) &&
                 counts - canga->ultimo_dano >= canga->dano_delay) {
                 canga->vida -= 1;
                 canga->ultimo_dano = counts;
@@ -853,8 +853,8 @@ void danoJogador(Inimigo inimigos[], Jogador *canga, int indice,
                     continue;
                 }
 
-                if (fabs(inimigos[i].balas[j].x - canga->x) < 40 &&
-                    fabs(inimigos[i].balas[j].y - canga->y) < 40 &&
+                if (abs(inimigos[i].balas[j].x - canga->x) < 40 &&
+                    abs(inimigos[i].balas[j].y - canga->y) < 40 &&
                     counts - canga->ultimo_dano >= canga->dano_delay) {
                     canga->vida -= 1;
                     canga->ultimo_dano = counts;
@@ -919,13 +919,12 @@ EstadoGlobal gerar_estado(FolhaSprites sprites) {
 /*
     Reinicia o estado de um jogo anterior.
 */
-void *reiniciar_estado(EstadoGlobal *antigo) {
+void reiniciar_estado(EstadoGlobal *antigo) {
     free(antigo->balas);
     free(antigo->homem_tatus);
     free(antigo->formigas);
 
-    EstadoGlobal estado_temp = gerar_estado(antigo->sprites);
-    *antigo = estado_temp;
+    *antigo = gerar_estado(antigo->sprites);
 }
 
 int main() {
@@ -1060,15 +1059,15 @@ int main() {
             } else {
                 // Temporário
                 redesenhar_mapa(sprites);
-                al_draw_filled_rectangle(0, (ALTURA / 2) - 80, LARGURA,
-                                         (ALTURA / 2) + 80,
+                al_draw_filled_rectangle(0, (ALTURA / 2.0) - 80, LARGURA,
+                                         (ALTURA / 2.0) + 80,
                                          al_map_rgba(0, 0, 0, 240));
 
-                al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 6,
-                             (ALTURA / 2) - 30, 0, "SE LASCOU!");
+                al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 6.0,
+                             (ALTURA / 2.0) - 30, 0, "SE LASCOU!");
 
-                al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 6,
-                             (ALTURA / 2) + 10, 0,
+                al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 6.0,
+                             (ALTURA / 2.0) + 10, 0,
                              "Pressione [ESPAÇO] para reiniciar.");
             }
             al_flip_display();
