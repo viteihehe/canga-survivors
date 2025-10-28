@@ -1095,14 +1095,20 @@ void reiniciar_inimigos(EstadoGlobal *globs) {
 void waves(EstadoGlobal *globs) {
     double tempo_atual = al_get_time();
     // Coldoown por wave
-    if (tempo_atual >= globs->ultima_wave + 20) {
+    if (tempo_atual - globs->ultima_wave >= 25) {
         globs->contador_wave++;
         reiniciar_inimigos(globs);
-        if (globs->coldoown_tatu > 0) {
-            globs->coldoown_tatu -= 0.25 * (globs->contador_wave);
+        if (globs->coldoown_tatu > 0.5) {
+            globs->coldoown_tatu -= 0.02 * (globs->contador_wave);
         }
-        if (globs->coldoown_formiga > 0) {
-            globs->coldoown_formiga -= 0.15 * (globs->contador_wave);
+        if (globs->coldoown_formiga > 0.5) {
+            globs->coldoown_formiga -= 0.03 * (globs->contador_wave);
+        }
+        if(globs->coldoown_formiga < 0.5) {
+            globs->coldoown_formiga = 0.5;
+        }
+        if(globs->coldoown_tatu < 0.5) {
+            globs->coldoown_tatu = 0.5;
         }
         globs->delay_mensagem = 120;
         globs->ultima_wave = tempo_atual;
@@ -1289,7 +1295,7 @@ int main() {
 
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
-            // waves(&globs);
+            waves(&globs);
             criar_bala_jogador(&globs.balas, &globs.quant_balas, &globs.canga,
                                tick_timer, globs.sprites, globs.sons);
 
