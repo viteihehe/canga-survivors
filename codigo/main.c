@@ -21,10 +21,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define VEL_JOGADOR 3 // Em pixels
-#define VEL_BALA 10   // Em frames
+#define VEL_BALA 10 // Em frames
 
-#define VELOCIDADE 3
 #define LARGURA 960
 #define ALTURA 768
 #define FPS 60
@@ -245,8 +243,11 @@ typedef struct {
 
     int vida;
     int dano_delay;
+    int dano;
+    int velocidade;
     bool vivo;
     int ultimo_dano;
+    int xp;
 } Jogador;
 
 typedef struct {
@@ -374,19 +375,19 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
 
     // Calculando a próxima posição
     if (teclas.cima && jogador->y > 0) {
-        y_futuro -= VEL_JOGADOR;
+        y_futuro -= jogador->velocidade;
     }
 
     if (teclas.baixo && jogador->y < ALTURA) {
-        y_futuro += VEL_JOGADOR;
+        y_futuro += jogador->velocidade;
     }
 
     if (teclas.esq && jogador->x > 0) {
-        x_futuro -= VEL_JOGADOR;
+        x_futuro -= jogador->velocidade;
     }
 
     if (teclas.dir && jogador->x < LARGURA) {
-        x_futuro += VEL_JOGADOR;
+        x_futuro += jogador->velocidade;
     }
 
     // Checando se dá pra mover
@@ -435,7 +436,7 @@ void criar_bala_jogador(Bala **balas, int *dest_quant, Jogador *jogador,
     }
 
     Bala bala_temp = {sprites.bala,  jogador->x, jogador->y,
-                      jogador->mira, true,       1};
+                      jogador->mira, true,       jogador->dano};
 
     (*dest_quant)++;
     *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
@@ -748,7 +749,7 @@ void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao) {
 }
 
 void processamentoBala(Inimigo inimigos[], int *indice, Bala balas[],
-                       int *max_balas, int colisao) {
+                       int *max_balas, int colisao, Jogador *canga) {
     for (int i = 0; i < *indice; i++) {
         if (!inimigos[i].ativo)
             continue;
@@ -760,6 +761,7 @@ void processamentoBala(Inimigo inimigos[], int *indice, Bala balas[],
             if (!balas[j].ativa) {
                 if (inimigos[i].vida <= 0) {
                     inimigos[i].ativo = false;
+                    canga->xp += 1;
                 }
                 break;
             }
@@ -891,6 +893,7 @@ typedef struct {
     double ultimo_spawn_formiga;
     double ultimo_spawn_tatu;
     double counts;
+    bool powerup_pendente;
 } EstadoGlobal;
 
 /*
@@ -908,6 +911,8 @@ EstadoGlobal gerar_estado(FolhaSprites sprites) {
         .vivo = true,
         .cooldown_arma = 30,
         .dano_delay = 1,
+        .velocidade = 3,
+        .dano = 1,
     };
 
     EstadoGlobal globs = {
@@ -971,6 +976,9 @@ void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
 
     int desvio = 100;
 
+    al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
+                             al_map_rgba(20, 20, 20, 150));
+
     for (int i = 0; i < 3; i++) {
         char desc[100] = "";
 
@@ -1003,6 +1011,29 @@ void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
                              y - desvio, 60, 60, fonte);
 
         desvio -= 100;
+    }
+}
+
+/*
+    Aplica um powerup no jogador.
+*/
+void aplicar_power(Jogador *canga, EPowerUps power) {
+    switch (power) {
+    case AUMENTO_DANO:
+        canga->dano += 1;
+        break;
+
+    case AUMENTO_VDA:
+        canga->cooldown_arma -= 5;
+
+        if (canga->cooldown_arma < 1) {
+            canga->cooldown_arma = 1;
+        }
+        break;
+
+    case AUMENTO_VDM:
+        canga->velocidade += 1;
+        break;
     }
 }
 
@@ -1076,6 +1107,10 @@ int main() {
     // ----------
     // Loop Principal
     // ----------
+
+    // TODO: Deixar aleatório quando tiver mais do que 3
+    EPowerUps powers_temp[3] = {AUMENTO_DANO, AUMENTO_VDA, AUMENTO_VDM};
+
     ALLEGRO_EVENT evento;
     for (;;) {
         al_wait_for_event(fila, &evento);
@@ -1102,9 +1137,35 @@ int main() {
                          (ALTURA / 2.0) + 10, ALLEGRO_ALIGN_CENTER,
                          "Pressione [ESPAÇO] para recomeçar.");
 
-            if (evento.type == ALLEGRO_EVENT_KEY_DOWN &&
-                evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+            if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
                 reiniciar_estado(&globs);
+            }
+
+            al_flip_display();
+            continue;
+        }
+
+        if (globs.canga.xp >= 1) {
+            redesenhar_mapa(sprites);
+            desenhar_powerups(powers_temp, fonte_power);
+
+            if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+                switch (evento.keyboard.keycode) {
+                case ALLEGRO_KEY_1:
+                    aplicar_power(&globs.canga, powers_temp[0]);
+                    globs.canga.xp = 0;
+                    break;
+
+                case ALLEGRO_KEY_2:
+                    aplicar_power(&globs.canga, powers_temp[1]);
+                    globs.canga.xp = 0;
+                    break;
+
+                case ALLEGRO_KEY_3:
+                    aplicar_power(&globs.canga, powers_temp[2]);
+                    globs.canga.xp = 0;
+                    break;
+                }
             }
 
             al_flip_display();
@@ -1129,9 +1190,11 @@ int main() {
             inimigosLogica(globs.formigas, &globs.indice_formiga, globs.canga,
                            &globs.counts, globs.sprites.cuspe);
             processamentoBala(globs.homem_tatus, &globs.indice_tatu,
-                              globs.balas, &globs.quant_balas, 28);
+                              globs.balas, &globs.quant_balas, 28,
+                              &globs.canga);
             processamentoBala(globs.formigas, &globs.indice_formiga,
-                              globs.balas, &globs.quant_balas, 22);
+                              globs.balas, &globs.quant_balas, 22,
+                              &globs.canga);
             danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
                         globs.counts);
             danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
