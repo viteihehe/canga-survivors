@@ -1,16 +1,17 @@
+#include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/altime.h>
 #include <allegro5/bitmap.h>
 #include <allegro5/bitmap_draw.h>
 #include <allegro5/bitmap_io.h>
 #include <allegro5/color.h>
 #include <allegro5/display.h>
 #include <allegro5/events.h>
-#include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_acodec.h>
 #include <allegro5/keyboard.h>
 #include <allegro5/keycodes.h>
 #include <allegro5/mouse.h>
@@ -22,10 +23,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define VEL_JOGADOR 3 // Em pixels
-#define VEL_BALA 10   // Em frames
+#define VEL_BALA 10 // Em frames
 
-#define VELOCIDADE 3
 #define LARGURA 960
 #define ALTURA 768
 #define FPS 60
@@ -232,13 +231,13 @@ typedef struct {
     int dano;
 } Bala;
 
-typedef struct{
-    ALLEGRO_AUDIO_STREAM* musica_de_fundo;
-    ALLEGRO_SAMPLE* morte_inimigos;
-    ALLEGRO_SAMPLE* disparo;
-    ALLEGRO_SAMPLE* hit;
-    ALLEGRO_AUDIO_STREAM* musica_derrota;
-    ALLEGRO_SAMPLE* hit_inimigo;
+typedef struct {
+    ALLEGRO_AUDIO_STREAM *musica_de_fundo;
+    ALLEGRO_SAMPLE *morte_inimigos;
+    ALLEGRO_SAMPLE *disparo;
+    ALLEGRO_SAMPLE *hit;
+    ALLEGRO_AUDIO_STREAM *musica_derrota;
+    ALLEGRO_SAMPLE *hit_inimigo;
 } Som;
 
 typedef struct {
@@ -255,10 +254,13 @@ typedef struct {
 
     int vida;
     int dano_delay;
+    int dano;
+    int velocidade;
     bool vivo;
     int ultimo_dano;
 
     Som sons;
+    int xp;
 } Jogador;
 
 typedef struct {
@@ -278,8 +280,6 @@ typedef struct {
     int quantidade_de_ataques;
     int tamanho_sprite;
 } Inimigo;
-
-
 
 int colide_no_cenario(int x, int y, int tam_box);
 void logicaBalaFormiga(Inimigo *inimigo);
@@ -388,19 +388,19 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
 
     // Calculando a próxima posição
     if (teclas.cima && jogador->y > 0) {
-        y_futuro -= VEL_JOGADOR;
+        y_futuro -= jogador->velocidade;
     }
 
     if (teclas.baixo && jogador->y < ALTURA) {
-        y_futuro += VEL_JOGADOR;
+        y_futuro += jogador->velocidade;
     }
 
     if (teclas.esq && jogador->x > 0) {
-        x_futuro -= VEL_JOGADOR;
+        x_futuro -= jogador->velocidade;
     }
 
     if (teclas.dir && jogador->x < LARGURA) {
-        x_futuro += VEL_JOGADOR;
+        x_futuro += jogador->velocidade;
     }
 
     // Checando se dá pra mover
@@ -430,7 +430,8 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
    argumento `dest_quant`.
 */
 void criar_bala_jogador(Bala **balas, int *dest_quant, Jogador *jogador,
-                        ALLEGRO_TIMER *tick_timer, FolhaSprites sprites, Som som) {
+                        ALLEGRO_TIMER *tick_timer, FolhaSprites sprites,
+                        Som som) {
     // O jogador tem que estar mirando em alguma direção
     if (!(jogador->mira.cima || jogador->mira.baixo || jogador->mira.esq ||
           jogador->mira.dir)) {
@@ -449,7 +450,7 @@ void criar_bala_jogador(Bala **balas, int *dest_quant, Jogador *jogador,
     }
 
     Bala bala_temp = {sprites.bala,  jogador->x, jogador->y,
-                      jogador->mira, true,       1};
+                      jogador->mira, true,       jogador->dano};
 
     (*dest_quant)++;
     *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
@@ -516,11 +517,10 @@ void frames(int *contador_frames, Inimigo *inimigo) {
 void criarInimigo(Inimigo **tatus, Inimigo **formigas, double *counts,
                   ALLEGRO_BITMAP *sprite_formiga, ALLEGRO_BITMAP *sprite_tatu,
                   double *ultimo_spawn_tatu, double *ultimo_spawn_formiga,
-                  int *indice_tatu, int *indice_formiga, double* cooldoown_tatu, double* cooldoown_formiga) {
-   
+                  int *indice_tatu, int *indice_formiga, double *cooldoown_tatu,
+                  double *cooldoown_formiga) {
 
-    
-    /*  
+    /*
         Função de criar todos os inimigos de maneira compacta
     */
 
@@ -607,9 +607,9 @@ void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
                     double *counts, ALLEGRO_BITMAP *cuspe) {
     const int disparo_cooldown = 2;
     int colisao = 0;
-    /*  
-        O tatu tem um movimento fixo seguindo as coordenadas dos players, se não estiver
-        colidindo de uma parede.
+    /*
+        O tatu tem um movimento fixo seguindo as coordenadas dos players, se não
+       estiver colidindo de uma parede.
     */
     for (int i = 0; i < *indice; i++) {
         if (inimigos[i].comportamento == TATU) {
@@ -641,7 +641,7 @@ void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
 
         if (inimigos[i].comportamento == FORMIGA) {
             colisao = 22;
-            /*  
+            /*
                 A formiga se aproxima do jogador até determinado ponto,
                 e foge caso o jogador tente se aproximar.
            */
@@ -764,7 +764,8 @@ void colisaoInimigos(Inimigo inimigos[], int *indice, int tamanho,
     }
 }
 
-void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao, Som som) {
+void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao,
+                 Som som) {
     if (bala_atual->ativa && inimigo_atual->ativo) {
         if (abs(bala_atual->x - inimigo_atual->posx) < colisao &&
             abs(bala_atual->y - inimigo_atual->posy) < colisao) {
@@ -776,7 +777,7 @@ void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao, Som som)
 }
 
 void processamentoBala(Inimigo inimigos[], int *indice, Bala balas[],
-                       int *max_balas, int colisao, Som* sons) {
+                       int *max_balas, int colisao, Jogador *canga, Som *sons) {
     for (int i = 0; i < *indice; i++) {
         if (!inimigos[i].ativo)
             continue;
@@ -788,8 +789,9 @@ void processamentoBala(Inimigo inimigos[], int *indice, Bala balas[],
             if (!balas[j].ativa) {
                 if (inimigos[i].vida <= 0) {
                     inimigos[i].ativo = false;
-                    al_play_sample(sons->morte_inimigos,
-                    0.5, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
+                    al_play_sample(sons->morte_inimigos, 0.5, 0, 1,
+                                   ALLEGRO_PLAYMODE_ONCE, 0);
+                    canga->xp += 1;
                 }
                 break;
             }
@@ -873,8 +875,8 @@ void logicaBalaFormiga(Inimigo *inimigo) {
     }
 }
 
-void danoJogador(Inimigo inimigos[], Jogador *canga, int indice,
-                 double counts, Som som) {
+void danoJogador(Inimigo inimigos[], Jogador *canga, int indice, double counts,
+                 Som som) {
     for (int i = 0; i < indice; i++) {
         if (!inimigos[i].ativo)
             continue;
@@ -911,7 +913,6 @@ void danoJogador(Inimigo inimigos[], Jogador *canga, int indice,
         canga->vivo = false;
 }
 
-
 typedef struct {
     FolhaSprites sprites;
     Jogador canga;
@@ -924,6 +925,7 @@ typedef struct {
     double ultimo_spawn_formiga;
     double ultimo_spawn_tatu;
     double counts;
+    bool powerup_pendente;
     double coldoown_tatu;
     double coldoown_formiga;
     double ultima_wave;
@@ -931,8 +933,6 @@ typedef struct {
     int delay_mensagem;
     Som sons;
 } EstadoGlobal;
-
-
 
 /*
     Gera um novo estado de jogo. A função pede a folha de sprites para evitar
@@ -949,6 +949,8 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
         .vivo = true,
         .cooldown_arma = 30,
         .dano_delay = 1,
+        .velocidade = 3,
+        .dano = 1,
     };
 
     EstadoGlobal globs = {
@@ -982,11 +984,104 @@ void reiniciar_estado(EstadoGlobal *antigo) {
     free(antigo->homem_tatus);
     free(antigo->formigas);
 
-
     *antigo = gerar_estado(antigo->sprites, antigo->sons);
 }
 
-void reiniciar_inimigos(EstadoGlobal* globs) {
+typedef enum {
+    AUMENTO_DANO,
+    AUMENTO_VDA,
+    AUMENTO_VDM,
+} EPowerUps;
+
+/*
+    Desenha uma caixa de texto centralizada em (X, Y). Tamanho de fonte
+   recomendado: 22.
+*/
+void desenhar_caixa_texto(char *texto, ALLEGRO_COLOR cor, int x, int y,
+                          float larg, float altu, ALLEGRO_FONT *fonte) {
+    float desvio_x = larg / 2;
+    float desvio_y = altu / 2;
+
+    al_draw_filled_rectangle(x - desvio_x, y - desvio_y, x + desvio_x,
+                             y + desvio_y, al_map_rgb(0, 0, 0));
+
+    al_draw_rectangle(x - desvio_x, y - desvio_y, x + desvio_x, y + desvio_y,
+                      al_map_rgb(255, 255, 255), 5);
+
+    al_draw_text(fonte, cor, x - 2, y - 8, ALLEGRO_ALIGN_CENTER, texto);
+}
+
+void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
+    int x = LARGURA / 2;
+    int y = ALTURA / 2;
+
+    float altu = 80;
+    float larg = 600;
+
+    int desvio = 100;
+
+    al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
+                             al_map_rgba(20, 20, 20, 150));
+
+    for (int i = 0; i < 3; i++) {
+        char desc[100] = "";
+
+        // Eu não vou fazer uma função só pra castar um char
+        char mini[2] = "\0\0";
+
+        switch (powers[i]) {
+        case AUMENTO_DANO:
+            strcat(desc, "Aumentar seu dano base em 1 unidade.");
+            break;
+
+        case AUMENTO_VDA:
+            strcat(desc, "Reduzir a cadência da sua arma em 5 frames.");
+            break;
+
+        case AUMENTO_VDM:
+            strcat(desc, "Aumentar seu movimento 1 frame por tick.");
+            break;
+
+        default:
+            strcat(desc, "<POWERUP DESCONHECIDO>");
+            break;
+        }
+
+        desenhar_caixa_texto(desc, al_map_rgb(255, 255, 255), x, y - desvio,
+                             larg, altu, fonte);
+
+        mini[0] = '1' + i;
+        desenhar_caixa_texto(mini, al_map_rgb(255, 233, 150), x - (larg / 2),
+                             y - desvio, 60, 60, fonte);
+
+        desvio -= 100;
+    }
+}
+
+/*
+    Aplica um powerup no jogador.
+*/
+void aplicar_power(Jogador *canga, EPowerUps power) {
+    switch (power) {
+    case AUMENTO_DANO:
+        canga->dano += 1;
+        break;
+
+    case AUMENTO_VDA:
+        canga->cooldown_arma -= 5;
+
+        if (canga->cooldown_arma < 1) {
+            canga->cooldown_arma = 1;
+        }
+        break;
+
+    case AUMENTO_VDM:
+        canga->velocidade += 1;
+        break;
+    }
+}
+
+void reiniciar_inimigos(EstadoGlobal *globs) {
     free(globs->homem_tatus);
     free(globs->formigas);
 
@@ -997,27 +1092,25 @@ void reiniciar_inimigos(EstadoGlobal* globs) {
     globs->formigas = NULL;
 }
 
-
-void waves(EstadoGlobal* globs) {
-        double tempo_atual = al_get_time();
+void waves(EstadoGlobal *globs) {
+    double tempo_atual = al_get_time();
     // Coldoown por wave
-        if(fabs(tempo_atual - globs->ultima_wave) >= 5) {
-            globs->contador_wave++;
-            reiniciar_inimigos(globs);
-            if(globs->coldoown_tatu > 0) {
-                globs->coldoown_tatu -= 0.25*(globs->contador_wave);
-            }
-            if(globs->coldoown_formiga > 0) {
-                globs->coldoown_formiga -= 0.15*(globs->contador_wave); 
-            }
-            globs->delay_mensagem = 120;
-            globs->ultima_wave = tempo_atual;
+    if (tempo_atual >= globs->ultima_wave + 20) {
+        globs->contador_wave++;
+        reiniciar_inimigos(globs);
+        if (globs->coldoown_tatu > 0) {
+            globs->coldoown_tatu -= 0.25 * (globs->contador_wave);
         }
-    
-    }     
+        if (globs->coldoown_formiga > 0) {
+            globs->coldoown_formiga -= 0.15 * (globs->contador_wave);
+        }
+        globs->delay_mensagem = 120;
+        globs->ultima_wave = tempo_atual;
+    }
+}
 
-    //Adição para reiniciar as funções atualizadas da wave
-void reiniciar_game(EstadoGlobal* globs) {
+// Adição para reiniciar as funções atualizadas da wave
+void reiniciar_game(EstadoGlobal *globs) {
     reiniciar_estado(globs);
     globs->contador_wave = 1;
     globs->delay_mensagem = 120;
@@ -1027,7 +1120,6 @@ void reiniciar_game(EstadoGlobal* globs) {
     globs->coldoown_tatu = 4;
     globs->coldoown_formiga = 6;
 }
-
 
 int main() {
     // ----------
@@ -1044,13 +1136,14 @@ int main() {
     al_init_primitives_addon();
     al_install_keyboard();
 
-    
     ALLEGRO_DISPLAY *tela = al_create_display(LARGURA, ALTURA);
     ALLEGRO_EVENT_QUEUE *fila = al_create_event_queue();
     al_register_event_source(fila, al_get_keyboard_event_source());
     al_register_event_source(fila, al_get_display_event_source(tela));
     ALLEGRO_FONT *fonte =
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 32, 0);
+    ALLEGRO_FONT *fonte_power =
+        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 22, 0);
 
     ALLEGRO_TIMER *tick_timer = al_create_timer(1.0 / FPS);
     al_register_event_source(fila, al_get_timer_event_source(tick_timer));
@@ -1087,14 +1180,19 @@ int main() {
         al_load_audio_stream("./materiais/sons/derrota_16bit.wav", 4, 2048),
         al_load_sample("./materiais/sons/hitini_16bit.wav"),
     };
-    //Inicialização das duas musicas, os outros efeitos de som estão expalhados pelo código
-     al_attach_audio_stream_to_mixer(jogo_sons.musica_de_fundo, al_get_default_mixer());
-     al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
-     al_set_audio_stream_playmode(jogo_sons.musica_de_fundo, ALLEGRO_PLAYMODE_LOOP);
-     al_attach_audio_stream_to_mixer(jogo_sons.musica_derrota, al_get_default_mixer());
-     al_set_audio_stream_playmode(jogo_sons.musica_derrota, ALLEGRO_PLAYMODE_LOOP);
-     al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
-    
+    // Inicialização das duas musicas, os outros efeitos de som estão expalhados
+    // pelo código
+    al_attach_audio_stream_to_mixer(jogo_sons.musica_de_fundo,
+                                    al_get_default_mixer());
+    al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
+    al_set_audio_stream_playmode(jogo_sons.musica_de_fundo,
+                                 ALLEGRO_PLAYMODE_LOOP);
+    al_attach_audio_stream_to_mixer(jogo_sons.musica_derrota,
+                                    al_get_default_mixer());
+    al_set_audio_stream_playmode(jogo_sons.musica_derrota,
+                                 ALLEGRO_PLAYMODE_LOOP);
+    al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
+
     // ----------
     // Globais
     // ----------
@@ -1111,105 +1209,138 @@ int main() {
     al_set_display_icon(tela, globs.sprites.cacto);
     al_set_window_title(tela, "Lampião Survivors");
 
-   
     // ---------
     // Inimigos
     // ---------
     int contador_frames = 0;
+
     // ----------
     // Loop Principal
     // ----------
+    // TODO: Deixar aleatório quando tiver mais do que 3
+    EPowerUps powers_temp[3] = {AUMENTO_DANO, AUMENTO_VDA, AUMENTO_VDM};
+
     ALLEGRO_EVENT evento;
     for (;;) {
         al_wait_for_event(fila, &evento);
-        
+
         capturar_movimento(evento, &globs.canga.movimento);
         capturar_mira(evento, &globs.canga.mira);
-       
-        
 
         if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             break;
         }
 
-        if (!globs.canga.vivo && evento.type == ALLEGRO_EVENT_KEY_DOWN &&
-            evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-            //reiniciar_game(&globs, &contador_waves, &mensager_timer);
-            reiniciar_game(&globs);
+        if (!globs.canga.vivo) {
+            redesenhar_mapa(sprites);
+            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
+            al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
+
+            al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
+                                     al_map_rgba(25, 0, 0, 150));
+            al_draw_filled_rectangle(0, (ALTURA / 2.0) - 80, LARGURA,
+                                     (ALTURA / 2.0) + 80, al_map_rgb(0, 0, 0));
+
+            al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 2.0,
+                         (ALTURA / 2.0) - 40, ALLEGRO_ALIGN_CENTER,
+                         "SE LASCÔ!");
+            al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 2.0,
+                         (ALTURA / 2.0) + 10, ALLEGRO_ALIGN_CENTER,
+                         "Pressione [ESPAÇO] para recomeçar.");
+
+            if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+                reiniciar_game(&globs);
+            }
+
+            al_flip_display();
             continue;
         }
-        
-        if (evento.type == ALLEGRO_EVENT_TIMER) {
-            if (globs.canga.vivo) {
-                
-                criar_bala_jogador(&globs.balas, &globs.quant_balas,
-                                   &globs.canga, tick_timer, globs.sprites, globs.sons);
-                
-                al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
-                al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
-                waves(&globs);
 
-                //--------
-                // Inimigos
-                //--------
-                globs.counts = al_get_time();
-                criarInimigo(&globs.homem_tatus, &globs.formigas, &globs.counts,
-                             globs.sprites.formiga, globs.sprites.tatu,
-                             &globs.ultimo_spawn_tatu,
-                             &globs.ultimo_spawn_formiga, &globs.indice_tatu,
-                             &globs.indice_formiga, &globs.coldoown_tatu, &globs.coldoown_formiga);
+        if (globs.canga.xp >= 20) {
+            redesenhar_mapa(sprites);
+            desenhar_powerups(powers_temp, fonte_power);
 
-                inimigosLogica(globs.homem_tatus, &globs.indice_tatu,
-                               globs.canga, &globs.counts, globs.sprites.cuspe);
-                inimigosLogica(globs.formigas, &globs.indice_formiga,
-                               globs.canga, &globs.counts, globs.sprites.cuspe);
-                processamentoBala(globs.homem_tatus, &globs.indice_tatu,
-                                  globs.balas, &globs.quant_balas, 28, &globs.sons);
-                processamentoBala(globs.formigas, &globs.indice_formiga,
-                                  globs.balas, &globs.quant_balas, 22, &globs.sons);
-                danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
-                            globs.counts, globs.sons);
-                danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
-                            globs.counts, globs.sons);
+            if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+                switch (evento.keyboard.keycode) {
+                case ALLEGRO_KEY_1:
+                    aplicar_power(&globs.canga, powers_temp[0]);
+                    globs.canga.xp = 0;
+                    break;
 
-               
-                // ----------
-                // Frames
-                // ----------
-                // al_draw_bitmap(cenario, 0, 0, ALLEGRO_FLIP_HORIZONTAL);
-                al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
-                                         al_map_rgb(0, 0, 0));
-                redesenhar_mapa(globs.sprites);
-                    
-                mover_jogador(globs.canga.movimento, &globs.canga);
-                desenharInimigo(globs.homem_tatus, globs.indice_tatu,
-                                &contador_frames, globs.canga);
-                desenharInimigo(globs.formigas, globs.indice_formiga,
-                                &contador_frames, globs.canga);
-                mover_balas(globs.balas, globs.quant_balas);
-                if(globs.delay_mensagem > 0) {
-                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), LARGURA/2, ALTURA/2-200, ALLEGRO_ALIGN_CENTER, "WAVE %d", globs.contador_wave);
-                    globs.delay_mensagem--;
+                case ALLEGRO_KEY_2:
+                    aplicar_power(&globs.canga, powers_temp[1]);
+                    globs.canga.xp = 0;
+                    break;
+
+                case ALLEGRO_KEY_3:
+                    aplicar_power(&globs.canga, powers_temp[2]);
+                    globs.canga.xp = 0;
+                    break;
                 }
-                // al_draw_filled_circle(canga.x, canga.y, 5, al_map_rgb(255, 0,
-                // 0));
-
-            } else {
-                // Temporário
-                redesenhar_mapa(sprites);
-                al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
-                al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
-                al_draw_filled_rectangle(0, (ALTURA / 2.0) - 80, LARGURA,
-                                         (ALTURA / 2.0) + 80,
-                                         al_map_rgba(0, 0, 0, 240));
-
-                al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 6.0,
-                             (ALTURA / 2.0) - 30, 0, "SE LASCÔ!");
-
-                al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 6.0,
-                             (ALTURA / 2.0) + 10, 0,
-                             "Pressione [ESPAÇO] para recomeçar.");
             }
+
+            al_flip_display();
+            continue;
+        }
+
+        if (evento.type == ALLEGRO_EVENT_TIMER) {
+            criar_bala_jogador(&globs.balas, &globs.quant_balas, &globs.canga,
+                               tick_timer, globs.sprites, globs.sons);
+
+            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
+            al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
+            // waves(&globs);
+            criar_bala_jogador(&globs.balas, &globs.quant_balas, &globs.canga,
+                               tick_timer, globs.sprites, globs.sons);
+
+            //--------
+            // Inimigos
+            //--------
+            globs.counts = al_get_time();
+            criarInimigo(&globs.homem_tatus, &globs.formigas, &globs.counts,
+                         globs.sprites.formiga, globs.sprites.tatu,
+                         &globs.ultimo_spawn_tatu, &globs.ultimo_spawn_formiga,
+                         &globs.indice_tatu, &globs.indice_formiga,
+                         &globs.coldoown_tatu, &globs.coldoown_formiga);
+
+            inimigosLogica(globs.homem_tatus, &globs.indice_tatu, globs.canga,
+                           &globs.counts, globs.sprites.cuspe);
+            inimigosLogica(globs.formigas, &globs.indice_formiga, globs.canga,
+                           &globs.counts, globs.sprites.cuspe);
+            processamentoBala(globs.homem_tatus, &globs.indice_tatu,
+                              globs.balas, &globs.quant_balas, 28, &globs.canga,
+                              &globs.sons);
+            processamentoBala(globs.formigas, &globs.indice_formiga,
+                              globs.balas, &globs.quant_balas, 22, &globs.canga,
+                              &globs.sons);
+            danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
+                        globs.counts, globs.sons);
+            danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
+                        globs.counts, globs.sons);
+
+            // ----------
+            // Frames
+            // ----------
+            // al_draw_bitmap(cenario, 0, 0, ALLEGRO_FLIP_HORIZONTAL);
+            al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
+                                     al_map_rgb(0, 0, 0));
+            redesenhar_mapa(globs.sprites);
+
+            mover_jogador(globs.canga.movimento, &globs.canga);
+            desenharInimigo(globs.homem_tatus, globs.indice_tatu,
+                            &contador_frames, globs.canga);
+            desenharInimigo(globs.formigas, globs.indice_formiga,
+                            &contador_frames, globs.canga);
+            mover_balas(globs.balas, globs.quant_balas);
+            if (globs.delay_mensagem > 0) {
+                al_draw_textf(fonte, al_map_rgb(255, 255, 255), LARGURA / 2.0,
+                              ALTURA / 2.0 - 200, ALLEGRO_ALIGN_CENTER,
+                              "WAVE %d", globs.contador_wave);
+                globs.delay_mensagem--;
+            }
+            // al_draw_filled_circle(canga.x, canga.y, 5, al_map_rgb(255, 0,
+            // 0));
+
             al_flip_display();
         }
     }
