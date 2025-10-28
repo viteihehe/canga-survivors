@@ -3,6 +3,7 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/altime.h>
 #include <allegro5/bitmap.h>
 #include <allegro5/bitmap_draw.h>
 #include <allegro5/bitmap_io.h>
@@ -937,6 +938,74 @@ void reiniciar_estado(EstadoGlobal *antigo) {
     *antigo = gerar_estado(antigo->sprites);
 }
 
+typedef enum {
+    AUMENTO_DANO,
+    AUMENTO_VDA,
+    AUMENTO_VDM,
+} EPowerUps;
+
+/*
+    Desenha uma caixa de texto centralizada em (X, Y). Tamanho de fonte
+   recomendado: 22.
+*/
+void desenhar_caixa_texto(char *texto, ALLEGRO_COLOR cor, int x, int y,
+                          float larg, float altu, ALLEGRO_FONT *fonte) {
+    float desvio_x = larg / 2;
+    float desvio_y = altu / 2;
+
+    al_draw_filled_rectangle(x - desvio_x, y - desvio_y, x + desvio_x,
+                             y + desvio_y, al_map_rgb(0, 0, 0));
+
+    al_draw_rectangle(x - desvio_x, y - desvio_y, x + desvio_x, y + desvio_y,
+                      al_map_rgb(255, 255, 255), 5);
+
+    al_draw_text(fonte, cor, x - 2, y - 8, ALLEGRO_ALIGN_CENTER, texto);
+}
+
+void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
+    int x = LARGURA / 2;
+    int y = ALTURA / 2;
+
+    float altu = 80;
+    float larg = 600;
+
+    int desvio = 100;
+
+    for (int i = 0; i < 3; i++) {
+        char desc[100] = "";
+
+        // Eu não vou fazer uma função só pra castar um char
+        char mini[2] = "\0\0";
+
+        switch (powers[i]) {
+        case AUMENTO_DANO:
+            strcat(desc, "Aumentar seu dano base em 1 unidade.");
+            break;
+
+        case AUMENTO_VDA:
+            strcat(desc, "Reduzir a cadência da sua arma em 5 frames.");
+            break;
+
+        case AUMENTO_VDM:
+            strcat(desc, "Aumentar seu movimento 1 frame por tick.");
+            break;
+
+        default:
+            strcat(desc, "<POWERUP DESCONHECIDO>");
+            break;
+        }
+
+        desenhar_caixa_texto(desc, al_map_rgb(255, 255, 255), x, y - desvio,
+                             larg, altu, fonte);
+
+        mini[0] = '1' + i;
+        desenhar_caixa_texto(mini, al_map_rgb(255, 233, 150), x - (larg / 2),
+                             y - desvio, 60, 60, fonte);
+
+        desvio -= 100;
+    }
+}
+
 int main() {
     // ----------
     // Inicialização
@@ -955,6 +1024,8 @@ int main() {
     al_register_event_source(fila, al_get_display_event_source(tela));
     ALLEGRO_FONT *fonte =
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 32, 0);
+    ALLEGRO_FONT *fonte_power =
+        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 22, 0);
 
     ALLEGRO_TIMER *tick_timer = al_create_timer(1.0 / FPS);
     al_register_event_source(fila, al_get_timer_event_source(tick_timer));
@@ -1081,6 +1152,7 @@ int main() {
             mover_balas(globs.balas, globs.quant_balas);
             // al_draw_filled_circle(canga.x, canga.y, 5, al_map_rgb(255, 0,
             // 0));
+
             al_flip_display();
         }
     }
