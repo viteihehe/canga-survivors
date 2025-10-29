@@ -1,4 +1,5 @@
-ARQUIVO_MAIN := ./codigo/main.c
+# ARQUIVO_MAIN := ./codigo/main.c
+ARQUIVO_MAIN := ${shell find ./codigo/*.c}
 
 SAIDA := jogo.out
 ALLEGRO := \
@@ -17,8 +18,6 @@ FLAGS := ${ALLEGRO} -g -Wall
 
 
 linux: ${ARQUIVO_MAIN}
-	gcc ${ARQUIVO_MAIN} ${FLAGS} -c -o main.o
-	gcc main.o -o ${SAIDA} ${FLAGS}
+	gcc ${ARQUIVO_MAIN} ${FLAGS} -o jogo.out
 
-	@rm *.o
 	@./${SAIDA}
