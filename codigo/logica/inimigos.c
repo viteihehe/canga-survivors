@@ -31,7 +31,7 @@ void criarInimigo(Inimigo **tatus, Inimigo **formigas, double *counts,
 
     if (*counts - *ultimo_spawn_tatu >= *cooldoown_tatu && *indice_tatu < 50) {
 
-        Inimigo tatu_temp = {TATU, 28,   0, 0, 0,    sprite_tatu, 3, 1,
+        Inimigo tatu_temp = {TATU, 28,   0, 0, 0,    sprite_tatu, 100, 1,
                              1,    true, 2, 0, NULL, 0,           64};
 
         (*indice_tatu)++;
@@ -71,7 +71,7 @@ void criarInimigo(Inimigo **tatus, Inimigo **formigas, double *counts,
         *indice_formiga < 100) {
 
         Inimigo temp_formiga = {FORMIGA, 22, 0,   0,    0, sprite_formiga,
-                                2,       1,  0.5, true, 2, 0,
+                                65,      1,  0.5, true, 2, 0,
                                 NULL,    0,  48};
         temp_formiga.balas = NULL;
         temp_formiga.quantidade_de_ataques = 0;

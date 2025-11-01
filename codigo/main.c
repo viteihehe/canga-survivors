@@ -68,10 +68,10 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
 
         .vida = 3,
         .vivo = true,
-        .cooldown_arma = 30,
+        .cooldown_arma = 60,
         .dano_delay = 1,
         .velocidade = 3,
-        .dano = 1,
+        .dano = 30,
     };
 
     EstadoGlobal globs = {
@@ -166,7 +166,7 @@ int main() {
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 32, 0);
 
     ALLEGRO_FONT *fonte_powers =
-        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 22, 0);
+        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 23, 0);
 
     ALLEGRO_TIMER *tick_timer = al_create_timer(1.0 / FPS);
     al_register_event_source(fila, al_get_timer_event_source(tick_timer));
@@ -275,7 +275,7 @@ int main() {
             continue;
         }
 
-        if (globs.canga.xp >= 20) {
+        if (globs.canga.xp >= 1) {
             redesenhar_mapa(sprites);
             desenhar_powerups(powers_temp, fonte_powers);
 

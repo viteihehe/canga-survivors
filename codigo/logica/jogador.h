@@ -28,7 +28,7 @@ typedef struct {
     int vida;
     int dano_delay;
     int dano;
-    int velocidade;
+    float velocidade;
     bool vivo;
     int ultimo_dano;
 

@@ -6,7 +6,7 @@
 - [ ] Menu do jogo
 - [ ] Corrigir sistema de waves
 - [ ] Corrigir os inimigos atravessando o cenário
-- [ ] Balancear as evoluções
+- [x] Balancear as evoluções
 - [ ] Ajustar a vida dos inimigos para números grandes
 - [ ] Adicionar sistema de pause
 
