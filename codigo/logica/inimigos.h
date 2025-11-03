@@ -27,13 +27,14 @@ typedef struct {
     int quantidade_de_ataques;
     int tamanho_sprite;
     int vida_max;
+    int contador_frames;
 } Inimigo;
 
 void criarInimigo(Inimigo **tatus, Inimigo **formigas, double *counts,
                   ALLEGRO_BITMAP *sprite_formiga, ALLEGRO_BITMAP *sprite_tatu,
                   double *ultimo_spawn_tatu, double *ultimo_spawn_formiga,
                   int *indice_tatu, int *indice_formiga, double *cooldoown_tatu,
-                  double *cooldoown_formiga);
+                  double *cooldoown_formiga, int tipo, int *contador_total);
 
 void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
                     double *counts, ALLEGRO_BITMAP *cuspe);
@@ -45,11 +46,11 @@ void colisaoBala(Bala *bala_atual, Inimigo *inimigo_atual, int colisao,
                  Som som);
 
 void processamentoBala(Inimigo inimigos[], int *indice, Bala balas[],
-                       int *max_balas, int colisao, Jogador *canga, Som *sons);
+                       int *max_balas, int colisao, Jogador *canga, Som *sons, int *contador_morte);
 
 void reajusteInimigos(Inimigo inimigos[], int *indice);
 
-void desenharInimigo(Inimigo inimigos[], int indice, int *contador_frames,
+void desenharInimigo(Inimigo inimigos[], int indice, 
                      Jogador canga);
 
 void logicaBalaFormiga(Inimigo *inimigo);

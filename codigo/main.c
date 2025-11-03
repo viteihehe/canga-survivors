@@ -3,6 +3,7 @@
 #include "logica/inimigos.h"
 #include "logica/jogador.h"
 #include "logica/powerups.h"
+#include "utils.h"
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_font.h>
@@ -48,11 +49,14 @@ typedef struct {
     double coldoown_formiga;
 
     double counts;
-    int contador_frames;
 
-    double ultima_wave;
+    int total_inimigos_wave;
+    int inimigos_mortos;
+    bool wave_ativa;
     int contador_wave;
+    double ultima_wave;
     int delay_mensagem;
+    int maximo_inimigos;
 } EstadoGlobal;
 
 /*
@@ -89,9 +93,13 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
         .formigas = NULL,
         .coldoown_tatu = 4,
         .coldoown_formiga = 6,
-        .ultima_wave = 0,
-        .contador_wave = 1,
+        .total_inimigos_wave = 10,
+        .inimigos_mortos = 0,
         .delay_mensagem = 120,
+        .wave_ativa = true,
+        .contador_wave = 1,
+        .ultima_wave = 0,
+        .maximo_inimigos = 0,
     };
 
     return globs;
@@ -119,26 +127,81 @@ void reiniciar_inimigos(EstadoGlobal *globs) {
     globs->formigas = NULL;
 }
 
+
 void waves(EstadoGlobal *globs) {
-    double tempo_atual = al_get_time();
-    // Coldoown por wave
-    if (tempo_atual - globs->ultima_wave >= 25) {
-        globs->contador_wave++;
-        reiniciar_inimigos(globs);
-        if (globs->coldoown_tatu > 0.5) {
-            globs->coldoown_tatu -= 0.02 * (globs->contador_wave);
-        }
-        if (globs->coldoown_formiga > 0.5) {
-            globs->coldoown_formiga -= 0.03 * (globs->contador_wave);
-        }
-        if (globs->coldoown_formiga < 0.5) {
-            globs->coldoown_formiga = 0.5;
-        }
-        if (globs->coldoown_tatu < 0.5) {
-            globs->coldoown_tatu = 0.5;
-        }
+    if(globs->wave_ativa && globs->inimigos_mortos >= globs->total_inimigos_wave) {
+        globs->wave_ativa = false;
         globs->delay_mensagem = 120;
-        globs->ultima_wave = tempo_atual;
+        globs->ultima_wave = al_get_time();
+    }
+    if(!globs->wave_ativa && al_get_time() - globs->ultima_wave >= 3) {
+        globs->contador_wave++;
+        globs->total_inimigos_wave += 2;
+        globs->inimigos_mortos = 0;
+        globs->maximo_inimigos = 0;
+        globs->wave_ativa = true;
+
+        reiniciar_inimigos(globs);
+        if(globs->coldoown_tatu >= 0.5) {
+            globs->coldoown_tatu -= 0.1;
+        }
+        if(globs->coldoown_formiga >= 0.5) {
+            globs->coldoown_formiga -= 0.1;
+        }
+    }
+}
+
+void menu(ALLEGRO_BITMAP *menu, ALLEGRO_FONT *fonte, ALLEGRO_FONT *fonte50,
+          ALLEGRO_EVENT *ev, int *caso) {
+    int centro_x = LARGURA / 2 - 295;
+    int larg = 400;
+    int altu = 70;
+    int altu2 = 60;
+    char mini[2] = "\0\0";
+    int centro_x2 = LARGURA / 2 - 50;
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_draw_bitmap(menu, 0, 0, 0);
+
+    desenhar_caixa_texto(mini, al_map_rgb(0, 0, 0), centro_x2 + 50,
+                         ALTURA / 2 - 120, larg + 200, altu + 40, fonte);
+    desenhar_caixa_texto(mini, al_map_rgb(0, 0, 0), centro_x2 + 50, 380, larg,
+                         altu2, fonte);
+    desenhar_caixa_texto(mini, al_map_rgb(0, 0, 0), centro_x2 + 50, 450, larg,
+                         altu2, fonte);
+    desenhar_caixa_texto(mini, al_map_rgb(0, 0, 0), centro_x2 + 50, 520, larg,
+                         altu2, fonte);
+
+    al_draw_text(fonte50, al_map_rgb(255, 255, 255), centro_x, ALTURA / 2 - 150,
+                 0, "CANGA SURVIVORS");
+
+    switch (*caso) {
+    case 0:
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2 - 25, 365, 0,
+                     "->jogar");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2 - 10, 435, 0,
+                     "criadores");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2, 505, 0,
+                     "sair");
+        break;
+    case 1:
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2, 365, 0,
+                     "jogar");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2 - 35, 435, 0,
+                     "->criadores");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2, 505, 0,
+                     "sair");
+        break;
+    case 2:
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2, 365, 0,
+                     "jogar");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2 - 10, 435, 0,
+                     "criadores");
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), centro_x2 - 25, 505, 0,
+                     "->sair");
+        break;
+    default:
+        *caso = 0;
+        break;
     }
 }
 
@@ -156,6 +219,7 @@ int main() {
     al_reserve_samples(16);
     al_init_primitives_addon();
     al_install_keyboard();
+    srand(time(NULL));
 
     ALLEGRO_DISPLAY *tela = al_create_display(LARGURA, ALTURA);
     ALLEGRO_EVENT_QUEUE *fila = al_create_event_queue();
@@ -165,8 +229,13 @@ int main() {
     ALLEGRO_FONT *fonte =
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 32, 0);
 
+    ALLEGRO_FONT *fonte_titulo =
+        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 70, 0);
+
     ALLEGRO_FONT *fonte_powers =
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 23, 0);
+    ALLEGRO_BITMAP *menu_sprite =
+        al_load_bitmap("./materiais/sprites/menu2.png");
 
     ALLEGRO_TIMER *tick_timer = al_create_timer(1.0 / FPS);
     al_register_event_source(fila, al_get_timer_event_source(tick_timer));
@@ -203,18 +272,10 @@ int main() {
         al_load_sample("./materiais/sons/hit_16bit.wav"),
         al_load_audio_stream("./materiais/sons/derrota_16bit.wav", 4, 2048),
         al_load_sample("./materiais/sons/hitini_16bit.wav"),
-    };
-
-    al_attach_audio_stream_to_mixer(jogo_sons.musica_de_fundo,
-                                    al_get_default_mixer());
-    al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
-    al_set_audio_stream_playmode(jogo_sons.musica_de_fundo,
-                                 ALLEGRO_PLAYMODE_LOOP);
-    al_attach_audio_stream_to_mixer(jogo_sons.musica_derrota,
-                                    al_get_default_mixer());
-    al_set_audio_stream_playmode(jogo_sons.musica_derrota,
-                                 ALLEGRO_PLAYMODE_LOOP);
-    al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
+        al_load_audio_stream("./materiais/sons/menu_16bit.wav", 4, 2048),
+        al_load_sample("./materiais/sons/som_menu_16bit.wav"),
+        al_load_sample("./materiais/sons/escolha_16bit.wav"),
+        al_load_sample("./materiais/sons/texto_16bit.wav")};
 
     // ----------
     // Globais
@@ -231,11 +292,12 @@ int main() {
     // ----------
     al_set_display_icon(tela, globs.sprites.cacto);
     al_set_window_title(tela, "Lampião Survivors");
-
+    int caso = 0;
     // ----------
     // Loop Principal
     // ----------
-
+    // Variavel de controle
+    bool iniciar = false;
     // TODO: Deixar aleatório quando tiver mais do que 3
     EPowerUps powers_temp[3] = {AUMENTO_DANO, AUMENTO_VDA, AUMENTO_VDM};
 
@@ -243,119 +305,184 @@ int main() {
     for (;;) {
         al_wait_for_event(fila, &evento);
 
-        capturar_movimento(evento, &globs.canga.movimento);
-        capturar_mira(evento, &globs.canga.mira);
-
-        if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            break;
-        }
-
-        if (!globs.canga.vivo) {
-            redesenhar_mapa(sprites);
-            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
-            al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
-
-            al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
-                                     al_map_rgba(25, 0, 0, 150));
-            al_draw_filled_rectangle(0, (ALTURA / 2.0) - 80, LARGURA,
-                                     (ALTURA / 2.0) + 80, al_map_rgb(0, 0, 0));
-
-            al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 2.0,
-                         (ALTURA / 2.0) - 40, ALLEGRO_ALIGN_CENTER,
-                         "SE LASCÔ!");
-            al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 2.0,
-                         (ALTURA / 2.0) + 10, ALLEGRO_ALIGN_CENTER,
-                         "Pressione [ESPAÇO] para recomeçar.");
-
-            if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-                reiniciar_estado(&globs);
-            }
-
+        if (!iniciar) {
+            al_attach_audio_stream_to_mixer(jogo_sons.menu,
+                                            al_get_default_mixer());
+            al_set_audio_stream_gain(jogo_sons.menu, 0.6);
+            al_set_audio_stream_playmode(jogo_sons.menu, ALLEGRO_PLAYMODE_LOOP);
+            menu(menu_sprite, fonte, fonte_titulo, &evento, &caso);
             al_flip_display();
-            continue;
-        }
-
-        if (globs.canga.xp >= 15) {
-            redesenhar_mapa(sprites);
-            desenhar_powerups(powers_temp, fonte_powers);
 
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
-                switch (evento.keyboard.keycode) {
-                case ALLEGRO_KEY_1:
-                    aplicar_power(&globs.canga, powers_temp[0]);
-                    globs.canga.xp = 0;
-                    break;
-
-                case ALLEGRO_KEY_2:
-                    aplicar_power(&globs.canga, powers_temp[1]);
-                    globs.canga.xp = 0;
-                    break;
-
-                case ALLEGRO_KEY_3:
-                    aplicar_power(&globs.canga, powers_temp[2]);
-                    globs.canga.xp = 0;
-                    break;
+                if (evento.keyboard.keycode == ALLEGRO_KEY_UP ||
+                    evento.keyboard.keycode == ALLEGRO_KEY_W) {
+                    caso--;
+                    al_play_sample(jogo_sons.selecao, 1, 0, 1,
+                                   ALLEGRO_PLAYMODE_ONCE, 0);
+                }
+                if (evento.keyboard.keycode == ALLEGRO_KEY_DOWN ||
+                    evento.keyboard.keycode == ALLEGRO_KEY_S) {
+                    caso++;
+                    al_play_sample(jogo_sons.selecao, 1, 0, 1,
+                                   ALLEGRO_PLAYMODE_ONCE, 0);
+                }
+                if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER ||
+                    evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+                    if (caso == 0) {
+                        iniciar = true;
+                        al_play_sample(jogo_sons.escolha, 1, 0, 1,
+                                       ALLEGRO_PLAYMODE_ONCE, 0);
+                    }
+                    if (caso == 2) {
+                         al_play_sample(jogo_sons.escolha, 1, 0, 1,
+                                       ALLEGRO_PLAYMODE_ONCE, 0);
+                        break;
+                    }
                 }
             }
 
-            al_flip_display();
+            if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                break;
+            }
+
             continue;
         }
+        if (iniciar) {
+            al_set_audio_stream_playing(jogo_sons.menu, false);
+            al_attach_audio_stream_to_mixer(jogo_sons.musica_de_fundo,
+                                            al_get_default_mixer());
+            al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
+            al_set_audio_stream_playmode(jogo_sons.musica_de_fundo,
+                                         ALLEGRO_PLAYMODE_LOOP);
+            al_attach_audio_stream_to_mixer(jogo_sons.musica_derrota,
+                                            al_get_default_mixer());
+            al_set_audio_stream_playmode(jogo_sons.musica_derrota,
+                                         ALLEGRO_PLAYMODE_LOOP);
+            al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
 
-        if (evento.type == ALLEGRO_EVENT_TIMER) {
-            criar_bala_jogador(&globs.balas, &globs.quant_balas, &globs.canga,
-                               tick_timer, globs.sprites, globs.sons);
+            capturar_movimento(evento, &globs.canga.movimento);
+            capturar_mira(evento, &globs.canga.mira);
 
-            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
-            al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
-            waves(&globs);
-            criar_bala_jogador(&globs.balas, &globs.quant_balas, &globs.canga,
-                               tick_timer, globs.sprites, globs.sons);
-
-            // --------
-            // Inimigos
-            // --------
-            globs.counts = al_get_time();
-            criarInimigo(&globs.homem_tatus, &globs.formigas, &globs.counts,
-                         globs.sprites.formiga, globs.sprites.tatu,
-                         &globs.ultimo_spawn_tatu, &globs.ultimo_spawn_formiga,
-                         &globs.indice_tatu, &globs.indice_formiga,
-                         &globs.coldoown_tatu, &globs.coldoown_formiga);
-
-            inimigosLogica(globs.homem_tatus, &globs.indice_tatu, globs.canga,
-                           &globs.counts, globs.sprites.cuspe);
-            inimigosLogica(globs.formigas, &globs.indice_formiga, globs.canga,
-                           &globs.counts, globs.sprites.cuspe);
-            processamentoBala(globs.homem_tatus, &globs.indice_tatu,
-                              globs.balas, &globs.quant_balas, 28, &globs.canga,
-                              &globs.sons);
-            processamentoBala(globs.formigas, &globs.indice_formiga,
-                              globs.balas, &globs.quant_balas, 22, &globs.canga,
-                              &globs.sons);
-            danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
-                        globs.counts, globs.sons);
-            danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
-                        globs.counts, globs.sons);
-
-            // ----------
-            // Redesenho
-            // ----------
-            redesenhar_mapa(sprites);
-            mover_jogador(globs.canga.movimento, &globs.canga);
-            desenharInimigo(globs.homem_tatus, globs.indice_tatu,
-                            &globs.contador_frames, globs.canga);
-            desenharInimigo(globs.formigas, globs.indice_formiga,
-                            &globs.contador_frames, globs.canga);
-            mover_balas(globs.balas, globs.quant_balas);
-            if (globs.delay_mensagem > 0) {
-                al_draw_textf(fonte, al_map_rgb(255, 255, 255), LARGURA / 2.0,
-                              ALTURA / 2.0 - 200, ALLEGRO_ALIGN_CENTER,
-                              "WAVE %d", globs.contador_wave);
-                globs.delay_mensagem--;
+            if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                break;
             }
-            desenhar_vidas(globs.homem_tatus, globs.indice_tatu);
-            desenhar_vidas(globs.formigas, globs.indice_formiga);
-            al_flip_display();
+
+            if (!globs.canga.vivo) {
+                redesenhar_mapa(sprites);
+                al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
+                al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
+
+                al_draw_filled_rectangle(0, 0, LARGURA, ALTURA,
+                                         al_map_rgba(25, 0, 0, 150));
+                al_draw_filled_rectangle(0, (ALTURA / 2.0) - 80, LARGURA,
+                                         (ALTURA / 2.0) + 80,
+                                         al_map_rgb(0, 0, 0));
+
+                al_draw_text(fonte, al_map_rgb(255, 255, 255), LARGURA / 2.0,
+                             (ALTURA / 2.0) - 40, ALLEGRO_ALIGN_CENTER,
+                             "SE LASCÔ!");
+                al_draw_text(fonte, al_map_rgb(150, 150, 150), LARGURA / 2.0,
+                             (ALTURA / 2.0) + 10, ALLEGRO_ALIGN_CENTER,
+                             "Pressione [ESPAÇO] para recomeçar.");
+
+                if (evento.keyboard.keycode == ALLEGRO_KEY_SPACE) {
+                    reiniciar_estado(&globs);
+                }
+
+                al_flip_display();
+                continue;
+            }
+
+            if (globs.canga.xp >= 15) {
+                redesenhar_mapa(sprites);
+                desenhar_powerups(powers_temp, fonte_powers);
+
+                if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
+                    switch (evento.keyboard.keycode) {
+                    case ALLEGRO_KEY_1:
+                        aplicar_power(&globs.canga, powers_temp[0]);
+                        globs.canga.xp = 0;
+                        break;
+
+                    case ALLEGRO_KEY_2:
+                        aplicar_power(&globs.canga, powers_temp[1]);
+                        globs.canga.xp = 0;
+                        break;
+
+                    case ALLEGRO_KEY_3:
+                        aplicar_power(&globs.canga, powers_temp[2]);
+                        globs.canga.xp = 0;
+                        break;
+                    }
+                }
+
+                al_flip_display();
+                continue;
+            }
+
+            if (evento.type == ALLEGRO_EVENT_TIMER) {
+                criar_bala_jogador(&globs.balas, &globs.quant_balas,
+                                   &globs.canga, tick_timer, globs.sprites,
+                                   globs.sons);
+
+                al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
+                al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
+                waves(&globs);
+                criar_bala_jogador(&globs.balas, &globs.quant_balas,
+                                   &globs.canga, tick_timer, globs.sprites,
+                                   globs.sons);
+
+                // --------
+                // Inimigos
+                // --------
+                globs.counts = al_get_time();
+                
+                if(globs.maximo_inimigos < globs.total_inimigos_wave) {
+                    int tipo = rand() % 2;
+                    criarInimigo(&globs.homem_tatus, &globs.formigas, &globs.counts,
+                             globs.sprites.formiga, globs.sprites.tatu,
+                             &globs.ultimo_spawn_tatu,
+                             &globs.ultimo_spawn_formiga, &globs.indice_tatu,
+                             &globs.indice_formiga, &globs.coldoown_tatu,
+                             &globs.coldoown_formiga, tipo, &globs.maximo_inimigos);
+                }
+
+                inimigosLogica(globs.homem_tatus, &globs.indice_tatu,
+                               globs.canga, &globs.counts, globs.sprites.cuspe);
+                inimigosLogica(globs.formigas, &globs.indice_formiga,
+                               globs.canga, &globs.counts, globs.sprites.cuspe);
+                processamentoBala(globs.homem_tatus, &globs.indice_tatu,
+                                  globs.balas, &globs.quant_balas, 28,
+                                  &globs.canga, &globs.sons, &globs.inimigos_mortos);
+                processamentoBala(globs.formigas, &globs.indice_formiga,
+                                  globs.balas, &globs.quant_balas, 22,
+                                  &globs.canga, &globs.sons, &globs.inimigos_mortos);
+                danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
+                            globs.counts, globs.sons);
+                danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
+                            globs.counts, globs.sons);
+
+                // ----------
+                // Redesenho
+                // ----------
+                redesenhar_mapa(sprites);
+                mover_jogador(globs.canga.movimento, &globs.canga);
+                desenharInimigo(globs.homem_tatus, globs.indice_tatu,
+                                globs.canga);
+                desenharInimigo(globs.formigas, globs.indice_formiga,
+                                globs.canga);
+                mover_balas(globs.balas, globs.quant_balas);
+                if (globs.delay_mensagem > 0) {
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255),
+                                  LARGURA / 2.0, ALTURA / 2.0 - 200,
+                                  ALLEGRO_ALIGN_CENTER, "WAVE %d",
+                                  globs.contador_wave);
+                    globs.delay_mensagem--;
+                }
+                desenhar_vidas(globs.homem_tatus, globs.indice_tatu);
+                desenhar_vidas(globs.formigas, globs.indice_formiga);
+                al_flip_display();
+            }
         }
     }
 

@@ -28,4 +28,8 @@ typedef struct {
     ALLEGRO_SAMPLE *hit;
     ALLEGRO_AUDIO_STREAM *musica_derrota;
     ALLEGRO_SAMPLE *hit_inimigo;
+    ALLEGRO_AUDIO_STREAM* menu;
+    ALLEGRO_SAMPLE* selecao;
+    ALLEGRO_SAMPLE* escolha;
+    ALLEGRO_SAMPLE* texto;
 } Som;
