@@ -266,7 +266,7 @@ int main() {
     // Sons
     // ----------
     Som jogo_sons = {
-        al_load_audio_stream("./materiais/sons/trilha_16bit.wav", 4, 2048),
+        al_load_audio_stream("./materiais/sons/trilhasonora_16bit.wav", 4, 2048),
         al_load_sample("./materiais/sons/morte_16bit.wav"),
         al_load_sample("./materiais/sons/disparo_16bit.wav"),
         al_load_sample("./materiais/sons/hit_16bit.wav"),

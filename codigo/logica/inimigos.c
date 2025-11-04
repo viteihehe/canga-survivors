@@ -163,8 +163,14 @@ void inimigosLogica(Inimigo inimigos[], int *indice, Jogador canga,
             if (inimigos[i].posy > canga.y) {
                 y_futuro -= inimigos[i].velocidade;
             }
-             if (!colide_no_cenario(x_futuro, y_futuro, 32)) {
+            //  if (!colide_no_cenario(x_futuro, y_futuro, 22)) {
+            //     inimigos[i].posx = x_futuro;
+            //     inimigos[i].posy = y_futuro;
+            // }
+            if (!colide_no_cenario((int)x_futuro, (int)inimigos[i].posy, 64)) {
                 inimigos[i].posx = x_futuro;
+            }
+            if (!colide_no_cenario((int)inimigos[i].posx, (int)y_futuro, 64)) {
                 inimigos[i].posy = y_futuro;
             }
         }
@@ -449,7 +455,7 @@ void danoJogador(Inimigo inimigos[], Jogador *canga, int indice, double counts,
                     canga->vida -= 1;
                     canga->ultimo_dano = counts;
                     inimigos[i].balas[j].ativa = false;
-                    al_play_sample(som.hit, 2, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
+                    al_play_sample(som.hit, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
                 }
             }
         }
