@@ -127,14 +127,14 @@ void reiniciar_inimigos(EstadoGlobal *globs) {
     globs->formigas = NULL;
 }
 
-
 void waves(EstadoGlobal *globs) {
-    if(globs->wave_ativa && globs->inimigos_mortos >= globs->total_inimigos_wave) {
+    if (globs->wave_ativa &&
+        globs->inimigos_mortos >= globs->total_inimigos_wave) {
         globs->wave_ativa = false;
         globs->delay_mensagem = 120;
         globs->ultima_wave = al_get_time();
     }
-    if(!globs->wave_ativa && al_get_time() - globs->ultima_wave >= 3) {
+    if (!globs->wave_ativa && al_get_time() - globs->ultima_wave >= 3) {
         globs->contador_wave++;
         globs->total_inimigos_wave += 2;
         globs->inimigos_mortos = 0;
@@ -142,10 +142,10 @@ void waves(EstadoGlobal *globs) {
         globs->wave_ativa = true;
 
         reiniciar_inimigos(globs);
-        if(globs->coldoown_tatu >= 0.5) {
+        if (globs->coldoown_tatu >= 0.5) {
             globs->coldoown_tatu -= 0.1;
         }
-        if(globs->coldoown_formiga >= 0.5) {
+        if (globs->coldoown_formiga >= 0.5) {
             globs->coldoown_formiga -= 0.1;
         }
     }
@@ -171,8 +171,8 @@ void menu(ALLEGRO_BITMAP *menu, ALLEGRO_FONT *fonte, ALLEGRO_FONT *fonte50,
     desenhar_caixa_texto(mini, al_map_rgb(0, 0, 0), centro_x2 + 50, 520, larg,
                          altu2, fonte);
 
-    al_draw_text(fonte50, al_map_rgb(255, 255, 255), centro_x, ALTURA / 2 - 150,
-                 0, "CANGA SURVIVORS");
+    al_draw_text(fonte50, al_map_rgb(255, 255, 255), centro_x,
+                 ALTURA / 2.0 - 150, 0, "CANGA SURVIVORS");
 
     switch (*caso) {
     case 0:
@@ -232,8 +232,6 @@ int main() {
     ALLEGRO_FONT *fonte_titulo =
         al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 70, 0);
 
-    ALLEGRO_FONT *fonte_powers =
-        al_load_ttf_font("./materiais/fontes/FiftiesMovies.ttf", 23, 0);
     ALLEGRO_BITMAP *menu_sprite =
         al_load_bitmap("./materiais/sprites/menu2.png");
 
@@ -334,7 +332,7 @@ int main() {
                                        ALLEGRO_PLAYMODE_ONCE, 0);
                     }
                     if (caso == 2) {
-                         al_play_sample(jogo_sons.escolha, 1, 0, 1,
+                        al_play_sample(jogo_sons.escolha, 1, 0, 1,
                                        ALLEGRO_PLAYMODE_ONCE, 0);
                         break;
                     }
@@ -395,7 +393,7 @@ int main() {
 
             if (globs.canga.xp >= 15) {
                 redesenhar_mapa(sprites);
-                desenhar_powerups(powers_temp, fonte_powers);
+                desenhar_powerups(powers_temp, fonte);
 
                 if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                     switch (evento.keyboard.keycode) {
@@ -436,15 +434,16 @@ int main() {
                 // Inimigos
                 // --------
                 globs.counts = al_get_time();
-                
-                if(globs.maximo_inimigos < globs.total_inimigos_wave) {
+
+                if (globs.maximo_inimigos < globs.total_inimigos_wave) {
                     int tipo = rand() % 2;
-                    criarInimigo(&globs.homem_tatus, &globs.formigas, &globs.counts,
-                             globs.sprites.formiga, globs.sprites.tatu,
-                             &globs.ultimo_spawn_tatu,
-                             &globs.ultimo_spawn_formiga, &globs.indice_tatu,
-                             &globs.indice_formiga, &globs.coldoown_tatu,
-                             &globs.coldoown_formiga, tipo, &globs.maximo_inimigos);
+                    criarInimigo(&globs.homem_tatus, &globs.formigas,
+                                 &globs.counts, globs.sprites.formiga,
+                                 globs.sprites.tatu, &globs.ultimo_spawn_tatu,
+                                 &globs.ultimo_spawn_formiga,
+                                 &globs.indice_tatu, &globs.indice_formiga,
+                                 &globs.coldoown_tatu, &globs.coldoown_formiga,
+                                 tipo, &globs.maximo_inimigos);
                 }
 
                 inimigosLogica(globs.homem_tatus, &globs.indice_tatu,
@@ -453,10 +452,12 @@ int main() {
                                globs.canga, &globs.counts, globs.sprites.cuspe);
                 processamentoBala(globs.homem_tatus, &globs.indice_tatu,
                                   globs.balas, &globs.quant_balas, 28,
-                                  &globs.canga, &globs.sons, &globs.inimigos_mortos);
+                                  &globs.canga, &globs.sons,
+                                  &globs.inimigos_mortos);
                 processamentoBala(globs.formigas, &globs.indice_formiga,
                                   globs.balas, &globs.quant_balas, 22,
-                                  &globs.canga, &globs.sons, &globs.inimigos_mortos);
+                                  &globs.canga, &globs.sons,
+                                  &globs.inimigos_mortos);
                 danoJogador(globs.homem_tatus, &globs.canga, globs.indice_tatu,
                             globs.counts, globs.sons);
                 danoJogador(globs.formigas, &globs.canga, globs.indice_formiga,
