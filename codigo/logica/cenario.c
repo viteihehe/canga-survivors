@@ -41,7 +41,7 @@ int mapa01_decos[MAPA_LINHAS][MAPA_COLUNAS] = {
 /*
     Uma função cujo único propósito é redesenhar o cenário.
 */
-void redesenhar_mapa(FolhaSprites sprites) {
+void desenhar_mapa(FolhaSprites sprites) {
     for (int lin = 0; lin < MAPA_LINHAS; lin++) {
         for (int col = 0; col < MAPA_COLUNAS; col++) {
             int x = col * TAM_BLOCOS;

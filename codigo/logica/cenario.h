@@ -19,6 +19,6 @@ enum EDecoracao {
     DP, // Pedrinhas
 };
 
-void redesenhar_mapa(FolhaSprites sprites);
+void desenhar_mapa(FolhaSprites sprites);
 
 int colide_no_cenario(int x, int y, int tam_box);
