@@ -130,7 +130,10 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
     }
 
     al_draw_bitmap(
-      jogador->sprite, jogador->x - 32, jogador->y - 32, ALLEGRO_FLIP_HORIZONTAL
+        jogador->sprite,
+        jogador->x - 32,
+        jogador->y - 32,
+        ALLEGRO_FLIP_HORIZONTAL
     );
 }
 
@@ -142,12 +145,12 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
    argumento `dest_quant`.
 */
 void criar_bala_jogador(
-  Bala **balas,
-  int *dest_quant,
-  Jogador *jogador,
-  ALLEGRO_TIMER *tick_timer,
-  FolhaSprites sprites,
-  Som som
+    Bala **balas,
+    int *dest_quant,
+    Jogador *jogador,
+    ALLEGRO_TIMER *tick_timer,
+    FolhaSprites sprites,
+    Som som
 ) {
     // O jogador tem que estar mirando em alguma direção
     if (!(jogador->mira.cima || jogador->mira.baixo || jogador->mira.esq ||
@@ -167,7 +170,7 @@ void criar_bala_jogador(
     }
 
     Bala bala_temp = {
-      sprites.bala, jogador->x, jogador->y, jogador->mira, true, jogador->dano
+        sprites.bala, jogador->x, jogador->y, jogador->mira, true, jogador->dano
     };
 
     (*dest_quant)++;
@@ -175,7 +178,7 @@ void criar_bala_jogador(
     (*balas)[*dest_quant - 1] = bala_temp;
 
     jogador->tempo_ultimo_disparo =
-      al_get_timer_count(tick_timer) + jogador->cooldown_arma;
+        al_get_timer_count(tick_timer) + jogador->cooldown_arma;
     al_play_sample(som.disparo, 1.5, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 }
 
@@ -213,10 +216,10 @@ void mover_balas(Bala *balas, int quant_balas) {
         }
 
         al_draw_bitmap(
-          balas[i].sprite,
-          balas[i].x - 8,
-          balas[i].y - 8,
-          ALLEGRO_FLIP_HORIZONTAL
+            balas[i].sprite,
+            balas[i].x - 8,
+            balas[i].y - 8,
+            ALLEGRO_FLIP_HORIZONTAL
         );
     }
 }

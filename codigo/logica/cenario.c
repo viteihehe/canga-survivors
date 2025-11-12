@@ -1,41 +1,41 @@
 #include "cenario.h"
 
 int mapa01_blocos[MAPA_LINHAS][MAPA_COLUNAS] = {
-  {A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, P, P, P, P},
-  {A, N, N, N, P, P, N, N, N, N, N, N, N, N, N, N, P, P, P, P},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, P},
-  {A, N, C, N, N, N, N, N, C, N, N, N, N, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, A},
-  {A, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, N, N, N, A},
-  {A, N, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, A},
-  {A, N, P, P, N, N, N, N, N, N, N, P, N, N, N, N, N, N, N, A},
-  {A, N, P, N, N, N, P, N, N, N, N, P, P, N, N, N, N, N, N, A},
-  {A, N, N, N, N, N, N, N, N, N, P, P, P, N, N, N, N, N, N, A},
-  {A, A, A, A, A, A, A, A, A, A, P, P, P, P, A, A, A, A, A, A},
+    {A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, P, P, P, P},
+    {A, N, N, N, P, P, N, N, N, N, N, N, N, N, N, N, P, P, P, P},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, P},
+    {A, N, C, N, N, N, N, N, C, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, A},
+    {A, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, N, N, N, A},
+    {A, N, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, A},
+    {A, N, P, P, N, N, N, N, N, N, N, P, N, N, N, N, N, N, N, A},
+    {A, N, P, N, N, N, P, N, N, N, N, P, P, N, N, N, N, N, N, A},
+    {A, N, N, N, N, N, N, N, N, N, P, P, P, N, N, N, N, N, N, A},
+    {A, A, A, A, A, A, A, A, A, A, P, P, P, P, A, A, A, A, A, A},
 };
 
 int mapa01_decos[MAPA_LINHAS][MAPA_COLUNAS] = {
-  {},
-  {},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DG, DG},
-  {DN, DN, DN, DP, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
-  {DN, DN, DN, DP},
-  {DN, DN, DN, DN, DP},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DG, DG, DG},
-  {DN, DN, DN, DN, DN, DN, DN, DG, DG, DG, DG},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DG, DG},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
-  {},
-  {DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN},
-  {DN, DG, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DP, DP},
-  {DN, DG, DG, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DP, DP},
-  {},
+    {},
+    {},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DG, DG},
+    {DN, DN, DN, DP, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
+    {DN, DN, DN, DP},
+    {DN, DN, DN, DN, DP},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DG, DG, DG},
+    {DN, DN, DN, DN, DN, DN, DN, DG, DG, DG, DG},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DG, DG},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DN, DG},
+    {},
+    {DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN},
+    {DN, DG, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DP, DP},
+    {DN, DG, DG, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DP, DP},
+    {},
 };
 
 /*
@@ -55,28 +55,28 @@ void desenhar_mapa(FolhaSprites sprites) {
             switch (mapa01_blocos[lin][col]) {
             case C:
                 al_draw_scaled_bitmap(
-                  sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 al_draw_scaled_bitmap(
-                  sprites.cacto, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.cacto, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 break;
 
             case P:
                 al_draw_scaled_bitmap(
-                  sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 al_draw_scaled_bitmap(
-                  sprites.pedra, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.pedra, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 break;
 
             case A:
                 al_draw_scaled_bitmap(
-                  sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 al_draw_scaled_bitmap(
-                  sprites.arbusto, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.arbusto, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 break;
             }
@@ -87,13 +87,13 @@ void desenhar_mapa(FolhaSprites sprites) {
             switch (mapa01_decos[lin][col]) {
             case DG:
                 al_draw_scaled_bitmap(
-                  sprites.grama, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.grama, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 break;
 
             case DP:
                 al_draw_scaled_bitmap(
-                  sprites.pedrinhas, 0, 0, 16, 16, x, y, 48, 48, 0
+                    sprites.pedrinhas, 0, 0, 16, 16, x, y, 48, 48, 0
                 );
                 break;
             }

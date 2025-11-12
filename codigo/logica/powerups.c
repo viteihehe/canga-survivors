@@ -17,7 +17,7 @@ void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
     int desvio = 100;
 
     al_draw_filled_rectangle(
-      0, 0, LARGURA, ALTURA, al_map_rgba(20, 20, 20, 150)
+        0, 0, LARGURA, ALTURA, al_map_rgba(20, 20, 20, 150)
     );
 
     for (int i = 0; i < 3; i++) {
@@ -45,18 +45,18 @@ void desenhar_powerups(EPowerUps powers[3], ALLEGRO_FONT *fonte) {
         }
 
         desenhar_caixa_texto(
-          desc, COR_BRANCO, x, y - desvio, larg, altu, fonte
+            desc, COR_BRANCO, x, y - desvio, larg, altu, fonte
         );
 
         mini[0] = '1' + i;
         desenhar_caixa_texto(
-          mini,
-          al_map_rgb(255, 233, 150),
-          x - (larg / 2),
-          y - desvio,
-          60,
-          60,
-          fonte
+            mini,
+            al_map_rgb(255, 233, 150),
+            x - (larg / 2),
+            y - desvio,
+            60,
+            60,
+            fonte
         );
 
         desvio -= 100;

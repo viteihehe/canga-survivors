@@ -31,46 +31,46 @@ typedef struct {
 } Inimigo;
 
 void criarInimigo(
-  Inimigo **tatus,
-  Inimigo **formigas,
-  double *counts,
-  ALLEGRO_BITMAP *sprite_formiga,
-  ALLEGRO_BITMAP *sprite_tatu,
-  double *ultimo_spawn_tatu,
-  double *ultimo_spawn_formiga,
-  int *indice_tatu,
-  int *indice_formiga,
-  double *cooldoown_tatu,
-  double *cooldoown_formiga,
-  int tipo,
-  int *contador_total
+    Inimigo **tatus,
+    Inimigo **formigas,
+    double *counts,
+    ALLEGRO_BITMAP *sprite_formiga,
+    ALLEGRO_BITMAP *sprite_tatu,
+    double *ultimo_spawn_tatu,
+    double *ultimo_spawn_formiga,
+    int *indice_tatu,
+    int *indice_formiga,
+    double *cooldoown_tatu,
+    double *cooldoown_formiga,
+    int tipo,
+    int *contador_total
 );
 
 void inimigosLogica(
-  Inimigo inimigos[],
-  int *indice,
-  Jogador canga,
-  double *counts,
-  ALLEGRO_BITMAP *cuspe
+    Inimigo inimigos[],
+    int *indice,
+    Jogador canga,
+    double *counts,
+    ALLEGRO_BITMAP *cuspe
 );
 
 void colisaoInimigos(
-  Inimigo inimigos[], int *indice, int tamanho, int tamanhosprite
+    Inimigo inimigos[], int *indice, int tamanho, int tamanhosprite
 );
 
 void colisaoBala(
-  Bala *bala_atual, Inimigo *inimigo_atual, int colisao, Som som
+    Bala *bala_atual, Inimigo *inimigo_atual, int colisao, Som som
 );
 
 void processamentoBala(
-  Inimigo inimigos[],
-  int *indice,
-  Bala balas[],
-  int *max_balas,
-  int colisao,
-  Jogador *canga,
-  Som *sons,
-  int *contador_morte
+    Inimigo inimigos[],
+    int *indice,
+    Bala balas[],
+    int *max_balas,
+    int colisao,
+    Jogador *canga,
+    Som *sons,
+    int *contador_morte
 );
 
 void reajusteInimigos(Inimigo inimigos[], int *indice);
@@ -80,7 +80,7 @@ void desenharInimigo(Inimigo inimigos[], int indice, Jogador canga);
 void logicaBalaFormiga(Inimigo *inimigo);
 
 void danoJogador(
-  Inimigo inimigos[], Jogador *canga, int indice, double counts, Som som
+    Inimigo inimigos[], Jogador *canga, int indice, double counts, Som som
 );
 
 void desenhar_vida_inimigos(Inimigo *inimigos, int quant_inimigos);
