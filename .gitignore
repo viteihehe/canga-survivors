@@ -7,3 +7,6 @@
 *.so
 *.exe
 *.out
+
+# Compactados
+*.tar.gz

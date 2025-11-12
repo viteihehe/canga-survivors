@@ -1,6 +1,6 @@
 CODIGOS := ${shell find -name *.c}
 
-SAIDA := jogo.out
+SAIDA := cangasurvs.out
 ALLEGRO := \
 	-lallegro \
 	-lallegro_main \
@@ -13,10 +13,21 @@ ALLEGRO := \
 	-lallegro_acodec \
 	-lallegro_primitives \
 	-lallegro_font
-FLAGS := ${ALLEGRO} -g -Wall
 
 
-linux: ${CODIGOS}
-	gcc ${CODIGOS} ${FLAGS} -o jogo.out
+dev: ${CODIGOS}
+	gcc ${CODIGOS} ${ALLEGRO} -g -Wall -o ${SAIDA}
 
 	@./${SAIDA}
+	@rm ${SAIDA}
+
+
+tar: ${CODIGOS}
+	gcc ${CODIGOS} ${ALLEGRO} -o ${SAIDA}
+	tar -czf CangasLinux.tar.gz \
+		--exclude ./materiais/sprites/desuso \
+		--exclude ./materiais/repositorio \
+		./materiais \
+		${SAIDA}
+
+	@rm ${SAIDA}
