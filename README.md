@@ -34,4 +34,4 @@ O jogo já é executado automaticamente após cada build, mas se quiser abrir se
 - As balas do jogador são alocadas permanentemente na memória.
 
 ## Apêndice
-![Jogaço](https://pbs.twimg.com/media/Guvim0MWAAAawZb.jpg)
+![QueJogo](./materiais/repositorio/quejogo.jpeg)
