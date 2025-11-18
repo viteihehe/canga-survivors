@@ -19,7 +19,7 @@ void tela_morte(
     int *op,
     bool *selecionou
 ) {
-    al_clear_to_color(COR_PRETO);
+    al_draw_filled_rectangle(180, -10, 820, 800, COR_PRETO);
     
 
     desenhar_caixa_texto(

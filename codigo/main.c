@@ -3,6 +3,7 @@
 #include "logica/inimigos.h"
 #include "logica/jogador.h"
 #include "logica/powerups.h"
+#include "logica/tela_morte.h"
 #include "utils.h"
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_audio.h>
@@ -27,7 +28,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "logica/tela_morte.h"
 
 typedef struct {
     FolhaSprites sprites;
@@ -71,7 +71,7 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
         .x = LARGURA / 2,
         .y = ALTURA / 2,
 
-        .vida = 1,
+        .vida = 3,
         .vivo = true,
         .cooldown_arma = 60,
         .dano_delay = 2,
@@ -296,26 +296,24 @@ int main() {
         al_load_sample("./materiais/sons/texto_16bit.wav")
     };
 
-      al_attach_audio_stream_to_mixer(
-                jogo_sons.menu, al_get_default_mixer()
-            );
-            al_set_audio_stream_gain(jogo_sons.menu, 0.6);
-            al_set_audio_stream_playmode(jogo_sons.menu, ALLEGRO_PLAYMODE_LOOP);
+    al_attach_audio_stream_to_mixer(jogo_sons.menu, al_get_default_mixer());
+    al_set_audio_stream_gain(jogo_sons.menu, 0.6);
+    al_set_audio_stream_playmode(jogo_sons.menu, ALLEGRO_PLAYMODE_LOOP);
 
-        al_attach_audio_stream_to_mixer(
-            jogo_sons.musica_de_fundo, al_get_default_mixer()
-        );
-        al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
-        al_set_audio_stream_playmode(
-            jogo_sons.musica_de_fundo, ALLEGRO_PLAYMODE_LOOP
-        );
-        al_attach_audio_stream_to_mixer(
-            jogo_sons.musica_derrota, al_get_default_mixer()
-        );
-        al_set_audio_stream_playmode(
-            jogo_sons.musica_derrota, ALLEGRO_PLAYMODE_LOOP
-        );
-        al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
+    al_attach_audio_stream_to_mixer(
+        jogo_sons.musica_de_fundo, al_get_default_mixer()
+    );
+    al_set_audio_stream_gain(jogo_sons.musica_de_fundo, 0.6);
+    al_set_audio_stream_playmode(
+        jogo_sons.musica_de_fundo, ALLEGRO_PLAYMODE_LOOP
+    );
+    al_attach_audio_stream_to_mixer(
+        jogo_sons.musica_derrota, al_get_default_mixer()
+    );
+    al_set_audio_stream_playmode(
+        jogo_sons.musica_derrota, ALLEGRO_PLAYMODE_LOOP
+    );
+    al_set_audio_stream_gain(jogo_sons.musica_derrota, 0.6);
 
     // ----------
     // Globais
@@ -341,7 +339,7 @@ int main() {
     int botao_menu_selecionado = 0;
     char letra = 'A';
     int aux = 0;
-    char sigla [4] = {'_', '_', '_', '\0'};
+    char sigla[4] = {'_', '_', '_', '\0'};
     bool selecionou = false;
     bool gravar = true;
 
@@ -363,7 +361,7 @@ int main() {
         // Menu Principal
         // ----------
         if (usuario_no_menu) {
-            
+
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
             al_set_audio_stream_playing(jogo_sons.menu, true);
@@ -426,7 +424,6 @@ int main() {
         // FIXME: Esses sons não eram pra ser executados toda vez
         al_set_audio_stream_playing(jogo_sons.menu, false);
         al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
-        
 
         capturar_movimento(evento, &globs.canga.movimento);
         capturar_mira(evento, &globs.canga.mira);
@@ -443,7 +440,8 @@ int main() {
             //     0, 0, LARGURA, ALTURA, al_map_rgba(25, 0, 0, 150)
             // );
             // al_draw_filled_rectangle(
-            //     0, (ALTURA / 2.0) - 80, LARGURA, (ALTURA / 2.0) + 80, COR_PRETO
+            //     0, (ALTURA / 2.0) - 80, LARGURA, (ALTURA / 2.0) + 80,
+            //     COR_PRETO
             // );
 
             // al_draw_text(
@@ -462,44 +460,74 @@ int main() {
             //     ALLEGRO_ALIGN_CENTER,
             //     "Pressione [ESPAÇO] para recomeçar."
             // );
-            if(gravar) {
-                tela_morte(globs.canga.pontuacao, fonte_titulo, fonte, sigla ,  &letra, &aux, &selecionou);
+            if (gravar) {
+                tela_morte(
+                    globs.canga.pontuacao,
+                    fonte_titulo,
+                    fonte,
+                    sigla,
+                    &letra,
+                    &aux,
+                    &selecionou
+                );
                 exibir_lista(fonte, fonte_titulo);
-                if(aux == 3) {
+                if (aux == 3) {
                     salvar_arquivo(globs.canga.pontuacao, sigla);
                     gravar = false;
                 }
-            }else {
+            } else {
+                al_draw_filled_rectangle(180, -10, 820, 800, COR_PRETO);
                 exibir_lista(fonte, fonte_titulo);
+                al_draw_text(
+                    fonte,
+                    COR_BRANCO,
+                    LARGURA/2,
+                    700,
+                    ALLEGRO_ALIGN_CENTRE,
+                    "Aperte [espaço] para recomeçar"
+                );
             }
-            
 
-            if(evento.type == ALLEGRO_EVENT_KEY_UP) {
-                if(evento.keyboard.keycode == ALLEGRO_KEY_S || evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-                if(letra > '@' && letra < '[') {
-                    letra += 1;
-                }else {
-                    letra = 'A';
+            if (evento.type == ALLEGRO_EVENT_KEY_UP) {
+                if (evento.keyboard.keycode == ALLEGRO_KEY_S ||
+                    evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
+                    if (letra > '@' && letra < '[') {
+                        letra += 1;
+                    } else {
+                        letra = 'A';
                     }
+                    al_play_sample(
+                        jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
+                    );
                 }
-                  if(evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_UP) {
-                if(letra > '@' && letra < '[') {
-                    letra -= 1;
-                }else {
-                    letra = 'A';
+                if (evento.keyboard.keycode == ALLEGRO_KEY_W ||
+                    evento.keyboard.keycode == ALLEGRO_KEY_UP) {
+                    if (letra > '@' && letra < '[') {
+                        letra -= 1;
+                    } else {
+                        letra = 'A';
                     }
+                    al_play_sample(
+                        jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
+                    );
                 }
 
-                if((evento.keyboard.keycode) == ALLEGRO_KEY_ENTER) {
+                if ((evento.keyboard.keycode) == ALLEGRO_KEY_ENTER) {
                     selecionou = true;
                 }
-                
             }
-
-            
 
             if ((evento.keyboard.keycode) == ALLEGRO_KEY_SPACE) {
                 reiniciar_estado(&globs);
+                botao_menu_selecionado = 0;
+                letra = 'A';
+                aux = 0;
+                sigla[0] = '_';
+                sigla[1] = '_';
+                sigla[2] = '_';
+                sigla[3] = '\0';
+                selecionou = false;
+                gravar = true;
             }
 
             al_flip_display();
