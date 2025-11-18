@@ -13,8 +13,9 @@
 
 
 ### Versão 2
-- [ ] Coletor de lixo para as balas
+- [ ] Passar balas para uma fila/lista/pilha (escolha)
 - [ ] Sistema de pause
 - [ ] Sistema de mapas
 - [ ] Fazer as balas da formiga irem na direção do jogador
 - [ ] Mini lore antes de começar o jogo
+- [X] Tela de morte e pontuação salva em arquivo (Falta embelezar)

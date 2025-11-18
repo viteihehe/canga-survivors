@@ -357,6 +357,7 @@ void processamentoBala(
                 if (inimigos[i].vida <= 0) {
                     inimigos[i].ativo = false;
                     (*contador_morte)++;
+                    canga->pontuacao += 5;
                     al_play_sample(
                         sons->morte_inimigos,
                         0.5,

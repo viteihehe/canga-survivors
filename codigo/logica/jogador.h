@@ -33,6 +33,7 @@ typedef struct {
     float velocidade;
     bool vivo;
     int ultimo_dano;
+    int pontuacao;
 
     Som sons;
 } Jogador;
