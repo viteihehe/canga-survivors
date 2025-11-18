@@ -13,9 +13,10 @@
 
 
 ### Versão 2
-- [ ] Passar balas para uma fila/lista/pilha (escolha)
+- [X] Passar balas para uma fila/lista/pilha (escolha) *IMPORTANTE
 - [ ] Sistema de pause
 - [ ] Sistema de mapas
 - [ ] Fazer as balas da formiga irem na direção do jogador
 - [ ] Mini lore antes de começar o jogo
-- [X] Tela de morte e pontuação salva em arquivo (Falta embelezar)
+- [X] Tela de morte e pontuação salva em arquivo (Falta embelezar) (ARQUIVO E ORDENAÇÃO);
+- [ ] Criação de busca de maior score de uma determinada sigla *IMPORTANTE

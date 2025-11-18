@@ -3,15 +3,9 @@
 #include "../midia.h"
 #include <allegro5/bitmap.h>
 #include <allegro5/events.h>
+#include "lista.h"
 
 #define VEL_BALA 10 // Em frames
-
-typedef struct {
-    bool cima;
-    bool baixo;
-    bool esq;
-    bool dir;
-} MapaDirecoes;
 
 typedef struct {
     ALLEGRO_BITMAP *sprite;
@@ -34,18 +28,10 @@ typedef struct {
     bool vivo;
     int ultimo_dano;
     int pontuacao;
+    Lista balas;
 
     Som sons;
 } Jogador;
-
-typedef struct {
-    ALLEGRO_BITMAP *sprite;
-    int x;
-    int y;
-    MapaDirecoes direcoes;
-    bool ativa;
-    int dano;
-} Bala;
 
 void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas);
 
@@ -54,14 +40,12 @@ void capturar_mira(ALLEGRO_EVENT evento, MapaDirecoes *teclas);
 void mover_jogador(MapaDirecoes teclas, Jogador *jogador);
 
 void criar_bala_jogador(
-    Bala **balas,
-    int *dest_quant,
     Jogador *jogador,
     ALLEGRO_TIMER *tick_timer,
     FolhaSprites sprites,
     Som som
 );
 
-void mover_balas(Bala *balas, int quant_balas);
+void mover_balas(Lista *lista);
 
 void desenhar_vida_jogador(Jogador *canga, FolhaSprites sprites);

@@ -145,8 +145,6 @@ void mover_jogador(MapaDirecoes teclas, Jogador *jogador) {
    argumento `dest_quant`.
 */
 void criar_bala_jogador(
-    Bala **balas,
-    int *dest_quant,
     Jogador *jogador,
     ALLEGRO_TIMER *tick_timer,
     FolhaSprites sprites,
@@ -173,9 +171,11 @@ void criar_bala_jogador(
         sprites.bala, jogador->x, jogador->y, jogador->mira, true, jogador->dano
     };
 
-    (*dest_quant)++;
-    *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
-    (*balas)[*dest_quant - 1] = bala_temp;
+    // (*dest_quant)++;
+    // *balas = realloc(*balas, sizeof(Bala) * *dest_quant);
+    // (*balas)[*dest_quant - 1] = bala_temp;
+
+    inserir_bala(&jogador->balas, bala_temp);
 
     jogador->tempo_ultimo_disparo =
         al_get_timer_count(tick_timer) + jogador->cooldown_arma;
@@ -188,40 +188,39 @@ void criar_bala_jogador(
 
     TODO: Mover a parte de redesenhar para uma função dedicada;
 */
-void mover_balas(Bala *balas, int quant_balas) {
-    for (int i = 0; i < quant_balas; i++) {
-        if (!balas[i].ativa) {
+void mover_balas(Lista *lista) {
+    No * temp = lista->inicio;
+
+    while(temp != NULL) {
+        Bala *b = &temp->dado;
+        if(!b->ativa) {
+            temp = temp->prox;
             continue;
         }
 
-        if (balas[i].direcoes.cima) {
-            balas[i].y -= VEL_BALA;
-        }
+        if(b->direcoes.cima)
+            b->y -= VEL_BALA;
+        if(b->direcoes.baixo)
+            b->y += VEL_BALA;
+        if(b->direcoes.dir)
+            b->x += VEL_BALA;
+        if(b->direcoes.esq)
+            b->x -= VEL_BALA;
 
-        if (balas[i].direcoes.baixo) {
-            balas[i].y += VEL_BALA;
-        }
-
-        if (balas[i].direcoes.esq) {
-            balas[i].x -= VEL_BALA;
-        }
-
-        if (balas[i].direcoes.dir) {
-            balas[i].x += VEL_BALA;
-        }
-
-        if (colide_no_cenario(balas[i].x, balas[i].y, 12)) {
-            balas[i].ativa = false;
+         if (colide_no_cenario(b->x, b->y, 12)) {
+            b->ativa = false;
             return;
         }
 
         al_draw_bitmap(
-            balas[i].sprite,
-            balas[i].x - 8,
-            balas[i].y - 8,
+            b->sprite,
+            b->x - 8,
+            b->y - 8,
             ALLEGRO_FLIP_HORIZONTAL
         );
-    }
+
+        temp = temp->prox;
+    }    
 }
 
 /*

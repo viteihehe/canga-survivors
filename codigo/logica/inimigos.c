@@ -338,8 +338,7 @@ void colisaoBala(
 void processamentoBala(
     Inimigo inimigos[],
     int *indice,
-    Bala balas[],
-    int *max_balas,
+    Lista *balas,
     int colisao,
     Jogador *canga,
     Som *sons,
@@ -348,13 +347,17 @@ void processamentoBala(
     for (int i = 0; i < *indice; i++) {
         if (!inimigos[i].ativo)
             continue;
-        for (int j = 0; j < *max_balas; j++) {
-            if (!balas[j].ativa)
+        
+        No *temp = balas->inicio;
+        while(temp != NULL) {
+            Bala *b = &temp->dado;
+            if(!b->ativa) {
+                temp = temp->prox;
                 continue;
-
-            colisaoBala(&balas[j], &inimigos[i], colisao, *sons);
-            if (!balas[j].ativa) {
-                if (inimigos[i].vida <= 0) {
+            }
+            colisaoBala(b, &inimigos[i], colisao, *sons);
+            if(!b->ativa) {
+                if(inimigos[i].vida <= 0) {
                     inimigos[i].ativo = false;
                     (*contador_morte)++;
                     canga->pontuacao += 5;
@@ -369,9 +372,12 @@ void processamentoBala(
                 }
                 break;
             }
-        }
+           temp = temp->prox; 
+        }   
+     
     }
     reajusteInimigos(inimigos, indice);
+    remover_balas_mortas(balas);
 }
 
 void reajusteInimigos(Inimigo inimigos[], int *indice) {

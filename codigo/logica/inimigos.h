@@ -65,8 +65,7 @@ void colisaoBala(
 void processamentoBala(
     Inimigo inimigos[],
     int *indice,
-    Bala balas[],
-    int *max_balas,
+    Lista *bala,
     int colisao,
     Jogador *canga,
     Som *sons,

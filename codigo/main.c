@@ -36,9 +36,6 @@ typedef struct {
     Jogador canga;
     bool powerup_pendente;
 
-    Bala *balas;
-    int quant_balas;
-
     Inimigo *homem_tatus;
     int indice_tatu;
     double ultimo_spawn_tatu;
@@ -78,6 +75,7 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
         .velocidade = 3,
         .dano = 30,
         .pontuacao = 0,
+        .balas.inicio = NULL,
     };
 
     EstadoGlobal globs = {
@@ -90,7 +88,6 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
            documentados aqui pra ajudar a lembrar na hora de dar o free() no
            reiniciar_estado().
         */
-        .balas = NULL,
         .homem_tatus = NULL,
         .formigas = NULL,
         .coldoown_tatu = 4,
@@ -111,7 +108,7 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
     Reinicia o estado de um jogo anterior.
 */
 void reiniciar_estado(EstadoGlobal *antigo) {
-    free(antigo->balas);
+  
     free(antigo->homem_tatus);
     free(antigo->formigas);
 
@@ -569,8 +566,6 @@ int main() {
         // ----------
         if (evento.type == ALLEGRO_EVENT_TIMER) {
             criar_bala_jogador(
-                &globs.balas,
-                &globs.quant_balas,
                 &globs.canga,
                 tick_timer,
                 globs.sprites,
@@ -581,8 +576,6 @@ int main() {
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             waves(&globs);
             criar_bala_jogador(
-                &globs.balas,
-                &globs.quant_balas,
                 &globs.canga,
                 tick_timer,
                 globs.sprites,
@@ -640,8 +633,7 @@ int main() {
             processamentoBala(
                 globs.homem_tatus,
                 &globs.indice_tatu,
-                globs.balas,
-                &globs.quant_balas,
+                &globs.canga.balas,
                 28,
                 &globs.canga,
                 &globs.sons,
@@ -650,8 +642,7 @@ int main() {
             processamentoBala(
                 globs.formigas,
                 &globs.indice_formiga,
-                globs.balas,
-                &globs.quant_balas,
+                &globs.canga.balas,
                 22,
                 &globs.canga,
                 &globs.sons,
@@ -679,7 +670,7 @@ int main() {
             mover_jogador(globs.canga.movimento, &globs.canga);
             desenharInimigo(globs.homem_tatus, globs.indice_tatu, globs.canga);
             desenharInimigo(globs.formigas, globs.indice_formiga, globs.canga);
-            mover_balas(globs.balas, globs.quant_balas);
+            mover_balas(&globs.canga.balas);
             desenhar_vida_jogador(&globs.canga, globs.sprites);
             desenhar_vida_inimigos(globs.homem_tatus, globs.indice_tatu);
             desenhar_vida_inimigos(globs.formigas, globs.indice_formiga);
@@ -707,6 +698,7 @@ int main() {
     al_destroy_audio_stream(jogo_sons.musica_de_fundo);
     al_destroy_audio_stream(jogo_sons.musica_derrota);
     al_destroy_audio_stream(jogo_sons.menu);
+    liberar_lista(&globs.canga.balas);
 
     return 0;
 }
