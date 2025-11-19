@@ -76,6 +76,9 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
         .dano = 30,
         .pontuacao = 0,
         .balas.inicio = NULL,
+        .frame_atual = 7,
+        .contador_frame = 0,
+        .frame_pernas = 1,
     };
 
     EstadoGlobal globs = {
@@ -256,7 +259,7 @@ int main() {
     // Sprites
     // ----------
     FolhaSprites sprites = {
-        .canga = al_load_bitmap("./materiais/sprites/canga.png"),
+        .canga = al_load_bitmap("./materiais/sprites/canga_com.png"),
         .coracao = al_load_bitmap("./materiais/sprites/coracao.png"),
 
         .tatu = al_load_bitmap("./materiais/sprites/peba2_1.png"),
@@ -273,6 +276,7 @@ int main() {
 
         .grama = al_load_bitmap("./materiais/sprites/mapa/grama.png"),
         .pedrinhas = al_load_bitmap("./materiais/sprites/mapa/pedrinhas.png"),
+        .canga_pernas = al_load_bitmap("./materiais/sprites/pernas.png"),
     };
 
     // ---------
@@ -668,6 +672,7 @@ int main() {
             // ----------
             desenhar_mapa(sprites);
             mover_jogador(globs.canga.movimento, &globs.canga);
+            desenhar_jogador(&globs.canga, globs.sprites.canga_pernas);
             desenharInimigo(globs.homem_tatus, globs.indice_tatu, globs.canga);
             desenharInimigo(globs.formigas, globs.indice_formiga, globs.canga);
             mover_balas(&globs.canga.balas);

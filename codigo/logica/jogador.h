@@ -30,6 +30,9 @@ typedef struct {
     int pontuacao;
     Lista balas;
 
+    int frame_atual;
+    int frame_pernas;
+    int contador_frame;
     Som sons;
 } Jogador;
 
@@ -49,3 +52,7 @@ void criar_bala_jogador(
 void mover_balas(Lista *lista);
 
 void desenhar_vida_jogador(Jogador *canga, FolhaSprites sprites);
+
+void frames_canga(ALLEGRO_BITMAP *pernas, Jogador *canga);
+
+void desenhar_jogador(Jogador *canga, ALLEGRO_BITMAP *pernas);
