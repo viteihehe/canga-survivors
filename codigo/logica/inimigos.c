@@ -38,6 +38,26 @@ void criarInimigo(
     int tipo,
     int *contador_total
 ) {
+    int spawn = rand() % 4;
+    CoordMapa coords = {};
+
+    switch (spawn) {
+    case 0:
+        coords = pegar_coord_centro_bloco(9, 0);
+        break;
+
+    case 1:
+        coords = pegar_coord_centro_bloco(0, 6);
+        break;
+
+    case 2:
+        coords = pegar_coord_centro_bloco(7, 15);
+        break;
+
+    case 3:
+        coords = pegar_coord_centro_bloco(19, 8);
+        break;
+    }
 
     if (tipo == 0) {
         if (*counts - *ultimo_spawn_tatu >= *cooldoown_tatu &&
@@ -62,37 +82,14 @@ void criarInimigo(
             *tatus = realloc(*tatus, sizeof(Inimigo) * (*indice_tatu + 1));
             (*tatus)[*indice_tatu - 1] = tatu_temp;
 
-            int spawn = rand() % 4;
-
-            switch (spawn) {
-            case 0:
-                (*tatus)[*indice_tatu - 1].posx = 80;
-                (*tatus)[*indice_tatu - 1].posy = ALTURA / 2;
-                break;
-
-            case 1:
-                (*tatus)[*indice_tatu - 1].posx = LARGURA - 200;
-                (*tatus)[*indice_tatu - 1].posy = ALTURA / 2;
-                break;
-
-            case 2:
-                (*tatus)[*indice_tatu - 1].posx = LARGURA / 2;
-                (*tatus)[*indice_tatu - 1].posy = ALTURA - 660;
-                break;
-
-            case 3:
-                (*tatus)[*indice_tatu - 1].posx = LARGURA / 2;
-                (*tatus)[*indice_tatu - 1].posy = ALTURA - 160;
-                break;
-
-            default:
-                break;
-            }
+            (*tatus)[*indice_tatu - 1].posx = coords.x;
+            (*tatus)[*indice_tatu - 1].posy = coords.y;
 
             *ultimo_spawn_tatu = *counts;
             (*contador_total)++;
         }
     }
+
     if (tipo == 1) {
         if (*counts - *ultimo_spawn_formiga >= *cooldoown_formiga &&
             *indice_formiga < 100) {
@@ -116,29 +113,9 @@ void criarInimigo(
             *formigas = realloc(*formigas, sizeof(Inimigo) * (*indice_formiga));
             (*formigas)[*indice_formiga - 1] = temp_formiga;
 
-            int spawn = rand() % 4;
+            (*formigas)[*indice_formiga - 1].posx = coords.x;
+            (*formigas)[*indice_formiga - 1].posy = coords.y;
 
-            switch (spawn) {
-            case 0:
-                (*formigas)[*indice_formiga - 1].posx = 80;
-                (*formigas)[*indice_formiga - 1].posy = ALTURA / 2;
-                break;
-            case 1:
-                (*formigas)[*indice_formiga - 1].posx = LARGURA - 200;
-                (*formigas)[*indice_formiga - 1].posy = ALTURA / 2;
-                break;
-            case 2:
-                (*formigas)[*indice_formiga - 1].posx = LARGURA / 2;
-                (*formigas)[*indice_formiga - 1].posy = ALTURA - 660;
-                break;
-            case 3:
-                (*formigas)[*indice_formiga - 1].posx = LARGURA / 2;
-                (*formigas)[*indice_formiga - 1].posy = ALTURA - 160;
-                break;
-
-            default:
-                break;
-            }
             (*contador_total)++;
             *ultimo_spawn_formiga = *counts;
         }
