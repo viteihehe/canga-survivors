@@ -29,26 +29,17 @@ typedef struct {
 } Inimigo;
 
 void criarInimigo(
-    Inimigo **tatus,
-    Inimigo **formigas,
-    double *counts,
-    ALLEGRO_BITMAP *sprite_formiga,
-    ALLEGRO_BITMAP *sprite_tatu,
-    double *ultimo_spawn_tatu,
-    double *ultimo_spawn_formiga,
-    int *indice_tatu,
-    int *indice_formiga,
-    double *cooldoown_tatu,
-    double *cooldoown_formiga,
-    int tipo,
+    Inimigo **inimigos,
+    FolhaSprites sprites,
+    double *ultimo_spawn_inimigo,
+    int *quant_inimigos,
+    double *cooldoown_inimigos,
+    int comportamento,
     int *contador_total
 );
 
 void inimigosLogica(
-    Inimigo inimigos[],
-    int *indice,
-    Jogador canga,
-    double *counts
+    Inimigo inimigos[], int *indice, Jogador canga, double *counts
 );
 
 void colisaoInimigos(

@@ -2,6 +2,7 @@
 #include "../constantes.h"
 #include "cenario.h"
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/altime.h>
 #include <allegro5/color.h>
 #include <math.h>
 
@@ -24,22 +25,21 @@ void frames(Inimigo *inimigo) {
     Função de criar todos os inimigos de maneira compacta
 */
 void criarInimigo(
-    Inimigo **tatus,
-    Inimigo **formigas,
-    double *counts,
-    ALLEGRO_BITMAP *sprite_formiga,
-    ALLEGRO_BITMAP *sprite_tatu,
-    double *ultimo_spawn_tatu,
-    double *ultimo_spawn_formiga,
-    int *indice_tatu,
-    int *indice_formiga,
-    double *cooldoown_tatu,
-    double *cooldoown_formiga,
-    int tipo,
+    Inimigo **inimigos,
+    FolhaSprites sprites,
+    double *ultimo_spawn_inimigo,
+    int *quant_inimigos,
+    double *cooldoown_inimigos,
+    int comportamento,
     int *contador_total
 ) {
+    if (!(al_get_time() >= *ultimo_spawn_inimigo + *cooldoown_inimigos)) {
+        return;
+    }
+
     int spawn = rand() % 4;
     CoordMapa coords = {};
+    Inimigo inimigo_atual = {};
 
     switch (spawn) {
     case 0:
@@ -59,67 +59,50 @@ void criarInimigo(
         break;
     }
 
-    if (tipo == 0) {
-        if (*counts - *ultimo_spawn_tatu >= *cooldoown_tatu &&
-            *indice_tatu < 50) {
-            Inimigo tatu_temp = {
-                .comportamento = TATU,
-                .tamanho_box = 20,
+    if (comportamento == TATU) {
+        inimigo_atual = (Inimigo){
+            .comportamento = TATU,
+            .tamanho_box = 20,
 
-                .sprite = sprite_tatu,
-                .tamanho_sprite = 64,
-                .total_frames = 2,
+            .sprite = sprites.tatu,
+            .tamanho_sprite = 64,
+            .total_frames = 2,
 
-                .vida = 120,
-                .vida_max = 120,
-                .dano = 1,
-                .velocidade = 1,
-                .ativo = true,
-                .contador_frames = 0,
-            };
-
-            (*indice_tatu)++;
-            *tatus = realloc(*tatus, sizeof(Inimigo) * (*indice_tatu + 1));
-            (*tatus)[*indice_tatu - 1] = tatu_temp;
-
-            (*tatus)[*indice_tatu - 1].posx = coords.x;
-            (*tatus)[*indice_tatu - 1].posy = coords.y;
-
-            *ultimo_spawn_tatu = *counts;
-            (*contador_total)++;
-        }
+            .vida = 120,
+            .vida_max = 120,
+            .dano = 1,
+            .velocidade = 1,
+            .ativo = true,
+            .contador_frames = 0,
+        };
     }
 
-    if (tipo == 1) {
-        if (*counts - *ultimo_spawn_formiga >= *cooldoown_formiga &&
-            *indice_formiga < 100) {
+    else if (comportamento == FORMIGA) {
+        inimigo_atual = (Inimigo){
+            .comportamento = FORMIGA,
+            .tamanho_box = 20,
 
-            Inimigo temp_formiga = {
-                .comportamento = FORMIGA,
-                .tamanho_box = 20,
+            .sprite = sprites.formiga,
+            .tamanho_sprite = 48,
+            .total_frames = 2,
 
-                .sprite = sprite_formiga,
-                .tamanho_sprite = 48,
-                .total_frames = 2,
-
-                .vida = 65,
-                .vida_max = 65,
-                .dano = 1,
-                .velocidade = 0.3,
-                .ativo = true,
-            };
-
-            (*indice_formiga)++;
-            *formigas = realloc(*formigas, sizeof(Inimigo) * (*indice_formiga));
-            (*formigas)[*indice_formiga - 1] = temp_formiga;
-
-            (*formigas)[*indice_formiga - 1].posx = coords.x;
-            (*formigas)[*indice_formiga - 1].posy = coords.y;
-
-            (*contador_total)++;
-            *ultimo_spawn_formiga = *counts;
-        }
+            .vida = 65,
+            .vida_max = 65,
+            .dano = 1,
+            .velocidade = 0.3,
+            .ativo = true,
+        };
     }
+
+    (*quant_inimigos)++;
+    *inimigos = realloc(*inimigos, sizeof(Inimigo) * (*quant_inimigos + 1));
+    (*inimigos)[*quant_inimigos - 1] = inimigo_atual;
+
+    (*inimigos)[*quant_inimigos - 1].posx = coords.x;
+    (*inimigos)[*quant_inimigos - 1].posy = coords.y;
+
+    *ultimo_spawn_inimigo = al_get_time();
+    (*contador_total)++;
 }
 
 void inimigosLogica(

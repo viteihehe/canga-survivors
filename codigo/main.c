@@ -38,15 +38,10 @@ typedef struct {
     Bala *balas;
     int quant_balas;
 
-    Inimigo *homem_tatus;
-    int indice_tatu;
-    double ultimo_spawn_tatu;
-    double coldoown_tatu;
-
-    Inimigo *formigas;
-    int indice_formiga;
-    double ultimo_spawn_formiga;
-    double coldoown_formiga;
+    Inimigo *inimigos;
+    int quant_inim;
+    double ultimo_spawn_inim;
+    double coldoown_inim;
 
     double counts;
 
@@ -56,7 +51,7 @@ typedef struct {
     int contador_wave;
     double ultima_wave;
     int delay_mensagem;
-    int maximo_inimigos;
+    int maximo_inims;
 } EstadoGlobal;
 
 /*
@@ -89,17 +84,15 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
            reiniciar_estado().
         */
         .balas = NULL,
-        .homem_tatus = NULL,
-        .formigas = NULL,
-        .coldoown_tatu = 4,
-        .coldoown_formiga = 6,
+        .inimigos = NULL,
+        .coldoown_inim = 2,
         .total_inimigos_wave = 5,
         .inimigos_mortos = 0,
         .delay_mensagem = 120,
         .wave_ativa = true,
         .contador_wave = 1,
         .ultima_wave = 0,
-        .maximo_inimigos = 0,
+        .maximo_inims = 0,
     };
 
     return globs;
@@ -110,21 +103,16 @@ EstadoGlobal gerar_estado(FolhaSprites sprites, Som sons) {
 */
 void reiniciar_estado(EstadoGlobal *antigo) {
     free(antigo->balas);
-    free(antigo->homem_tatus);
-    free(antigo->formigas);
+    free(antigo->inimigos);
 
     *antigo = gerar_estado(antigo->sprites, antigo->sons);
 }
 
 void reiniciar_inimigos(EstadoGlobal *globs) {
-    free(globs->homem_tatus);
-    free(globs->formigas);
+    free(globs->inimigos);
 
-    globs->indice_formiga = 0;
-    globs->indice_tatu = 0;
-
-    globs->homem_tatus = NULL;
-    globs->formigas = NULL;
+    globs->quant_inim = 0;
+    globs->inimigos = NULL;
 }
 
 void waves(EstadoGlobal *globs) {
@@ -139,16 +127,13 @@ void waves(EstadoGlobal *globs) {
         globs->contador_wave++;
         globs->total_inimigos_wave += 2;
         globs->inimigos_mortos = 0;
-        globs->maximo_inimigos = 0;
+        globs->maximo_inims = 0;
         globs->wave_ativa = true;
         globs->delay_mensagem = 120;
 
         reiniciar_inimigos(globs);
-        if (globs->coldoown_tatu >= 0.5) {
-            globs->coldoown_tatu -= 0.1;
-        }
-        if (globs->coldoown_formiga >= 0.5) {
-            globs->coldoown_formiga -= 0.1;
+        if (globs->coldoown_inim >= 0.5) {
+            globs->coldoown_inim -= 0.15;
         }
     }
 }
@@ -517,50 +502,25 @@ int main() {
             // --------
             globs.counts = al_get_time();
 
-            if (globs.maximo_inimigos < globs.total_inimigos_wave) {
-                int tipo = rand() % 2;
+            if (globs.maximo_inims < globs.total_inimigos_wave) {
                 criarInimigo(
-                    &globs.homem_tatus,
-                    &globs.formigas,
-                    &globs.counts,
-                    globs.sprites.formiga,
-                    globs.sprites.tatu,
-                    &globs.ultimo_spawn_tatu,
-                    &globs.ultimo_spawn_formiga,
-                    &globs.indice_tatu,
-                    &globs.indice_formiga,
-                    &globs.coldoown_tatu,
-                    &globs.coldoown_formiga,
-                    tipo,
-                    &globs.maximo_inimigos
+                    &globs.inimigos,
+                    globs.sprites,
+                    &globs.ultimo_spawn_inim,
+                    &globs.quant_inim,
+                    &globs.coldoown_inim,
+                    rand() % 2,
+                    &globs.maximo_inims
                 );
             }
 
-            // printf(
-            //   "Wave: %d | Mortos: %d/%d | Max: %d | Ativa: %d\n",
-            //   globs.contador_wave,
-            //   globs.inimigos_mortos,
-            //   globs.total_inimigos_wave,
-            //   globs.maximo_inimigos,
-            //   globs.wave_ativa
-            // );
-            // Caso queira ver a wave funcionando
+            inimigosLogica(
+                globs.inimigos, &globs.quant_inim, globs.canga, &globs.counts
+            );
 
-            inimigosLogica(
-                globs.homem_tatus,
-                &globs.indice_tatu,
-                globs.canga,
-                &globs.counts
-            );
-            inimigosLogica(
-                globs.formigas,
-                &globs.indice_formiga,
-                globs.canga,
-                &globs.counts
-            );
             processamentoBala(
-                globs.homem_tatus,
-                &globs.indice_tatu,
+                globs.inimigos,
+                &globs.quant_inim,
                 globs.balas,
                 &globs.quant_balas,
                 28,
@@ -568,27 +528,11 @@ int main() {
                 &globs.sons,
                 &globs.inimigos_mortos
             );
-            processamentoBala(
-                globs.formigas,
-                &globs.indice_formiga,
-                globs.balas,
-                &globs.quant_balas,
-                22,
-                &globs.canga,
-                &globs.sons,
-                &globs.inimigos_mortos
-            );
+
             danoJogador(
-                globs.homem_tatus,
+                globs.inimigos,
                 &globs.canga,
-                globs.indice_tatu,
-                globs.counts,
-                globs.sons
-            );
-            danoJogador(
-                globs.formigas,
-                &globs.canga,
-                globs.indice_formiga,
+                globs.quant_inim,
                 globs.counts,
                 globs.sons
             );
@@ -598,12 +542,10 @@ int main() {
             // ----------
             desenhar_mapa(sprites);
             mover_jogador(globs.canga.movimento, &globs.canga);
-            desenharInimigo(globs.homem_tatus, globs.indice_tatu, globs.canga);
-            desenharInimigo(globs.formigas, globs.indice_formiga, globs.canga);
+            desenharInimigo(globs.inimigos, globs.quant_inim, globs.canga);
             mover_balas(globs.balas, globs.quant_balas);
             desenhar_vida_jogador(&globs.canga, globs.sprites);
-            desenhar_vida_inimigos(globs.homem_tatus, globs.indice_tatu);
-            desenhar_vida_inimigos(globs.formigas, globs.indice_formiga);
+            desenhar_vida_inimigos(globs.inimigos, globs.quant_inim);
 
             if (globs.delay_mensagem > 0) {
                 char mensagem_wave[30];
