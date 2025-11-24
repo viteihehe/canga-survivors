@@ -263,7 +263,7 @@ int main() {
         .coracao = al_load_bitmap("./materiais/sprites/coracao.png"),
 
         .tatu = al_load_bitmap("./materiais/sprites/peba2_1.png"),
-        .formiga = al_load_bitmap("./materiais/sprites/formiga2.png"),
+        .formiga = al_load_bitmap("./materiais/sprites/formiga.png"),
         .cuspe = al_load_bitmap("./materiais/sprites/cuspe.png"),
 
         .bala = al_load_bitmap("./materiais/sprites/bala.png"),
@@ -437,30 +437,6 @@ int main() {
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
 
-            // al_draw_filled_rectangle(
-            //     0, 0, LARGURA, ALTURA, al_map_rgba(25, 0, 0, 150)
-            // );
-            // al_draw_filled_rectangle(
-            //     0, (ALTURA / 2.0) - 80, LARGURA, (ALTURA / 2.0) + 80,
-            //     COR_PRETO
-            // );
-
-            // al_draw_text(
-            //     fonte,
-            //     COR_BRANCO,
-            //     LARGURA / 2.0,
-            //     (ALTURA / 2.0) - 40,
-            //     ALLEGRO_ALIGN_CENTER,
-            //     "SE LASCÔ!"
-            // );
-            // al_draw_text(
-            //     fonte,
-            //     al_map_rgb(150, 150, 150),
-            //     LARGURA / 2.0,
-            //     (ALTURA / 2.0) + 10,
-            //     ALLEGRO_ALIGN_CENTER,
-            //     "Pressione [ESPAÇO] para recomeçar."
-            // );
             if (gravar) {
                 tela_morte(
                     globs.canga.pontuacao,
@@ -506,7 +482,7 @@ int main() {
                     if (letra > '@' && letra < '[') {
                         letra -= 1;
                     } else {
-                        letra = 'A';
+                        letra = 'Z';
                     }
                     al_play_sample(
                         jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0

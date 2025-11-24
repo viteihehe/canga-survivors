@@ -102,7 +102,7 @@ void criarInimigo(
                 .tamanho_box = 20,
 
                 .sprite = sprite_formiga,
-                .tamanho_sprite = 48,
+                .tamanho_sprite = 64,
                 .total_frames = 2,
 
                 .vida = 65,
@@ -178,8 +178,12 @@ void inimigosLogica(
             if (inimigos[i].posy > canga.y) {
                 y_futuro -= inimigos[i].velocidade;
             }
-            if (!colide_no_cenario(x_futuro, y_futuro, 22)) {
+            if (!colide_no_cenario(x_futuro, y_futuro, 24)) {
                 inimigos[i].posx = x_futuro;
+                inimigos[i].posy = y_futuro;
+            }else if(!colide_no_cenario(x_futuro, inimigos[i].posy, 24)) {
+                inimigos[i].posx = x_futuro;
+            }else {
                 inimigos[i].posy = y_futuro;
             }
             // if (!colide_no_cenario((int)x_futuro, (int)inimigos[i].posy, 64))
@@ -399,8 +403,14 @@ void desenharInimigo(Inimigo inimigos[], int indice, Jogador canga) {
             int png_x = inimigos[i].frame_atual * inimigos[i].tamanho_sprite;
             int png_y = 0;
             int flip = 0;
-            if (inimigos[i].posx < canga.x) {
+            if(inimigos[i].comportamento == FORMIGA) {
+                if (inimigos[i].posx > canga.x) {
                 flip = ALLEGRO_FLIP_HORIZONTAL;
+                }
+            }else {
+                if (inimigos[i].posx < canga.x) {
+                flip = ALLEGRO_FLIP_HORIZONTAL;
+                }
             }
 
             al_draw_bitmap_region(

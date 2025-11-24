@@ -131,6 +131,8 @@ void exibir_lista(ALLEGRO_FONT* fonte, ALLEGRO_FONT* fonte_titulo) {
 
             int posy_inicial = 200;
             for (int i = 0; i < quantidade; i++) {
+               if(i == 0) {
+                al_draw_text(fonte, COR_BRANCO, LARGURA/2-300, posy_inicial-40, 0, "-------------------------------------------------");
                 al_draw_textf(
                     fonte,
                     COR_BRANCO,
@@ -142,6 +144,21 @@ void exibir_lista(ALLEGRO_FONT* fonte, ALLEGRO_FONT* fonte_titulo) {
                     usuarios[i].sigla,
                     usuarios[i].pontos
                 );
+                al_draw_text(fonte, COR_BRANCO, LARGURA/2-300, posy_inicial+40, 0, "-------------------------------------------------");
+               }else {
+                al_draw_textf(
+                    fonte,
+                    COR_BRANCO,
+                    LARGURA / 2,
+                    posy_inicial,
+                    ALLEGRO_ALIGN_CENTER,
+                    "%dº %s %d pontos",
+                    i + 1,
+                    usuarios[i].sigla,
+                    usuarios[i].pontos
+                );
+                al_draw_text(fonte, COR_BRANCO, LARGURA/2-300, posy_inicial+40, 0, "-------------------------------------------------");
+               }
                 posy_inicial += 80;
             }
 
