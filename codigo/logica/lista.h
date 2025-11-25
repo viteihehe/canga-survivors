@@ -1,5 +1,7 @@
-#include <stdlib.h>
+#pragma once
+
 #include <allegro5/bitmap.h>
+#include <stdlib.h>
 
 typedef struct {
     bool cima;
@@ -19,11 +21,11 @@ typedef struct {
 
 typedef struct No {
     Bala dado;
-    struct No * prox;
+    struct No *prox;
 } No;
 
 typedef struct {
-    No * inicio;
+    No *inicio;
 } Lista;
 
 void inserir_bala(Lista *lista, Bala bala);

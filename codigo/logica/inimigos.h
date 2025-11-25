@@ -12,7 +12,6 @@ typedef enum {
 
 typedef struct {
     EComportamento comportamento;
-    int tamanho_box;
     int ultimo_ataque;
     int posx;
     int posy;
@@ -23,35 +22,23 @@ typedef struct {
     bool ativo;
     int total_frames;
     int frame_atual;
-    Bala *balas;
-    int quantidade_de_ataques;
     int tamanho_sprite;
     int vida_max;
     int contador_frames;
 } Inimigo;
 
 void criarInimigo(
-    Inimigo **tatus,
-    Inimigo **formigas,
-    double *counts,
-    ALLEGRO_BITMAP *sprite_formiga,
-    ALLEGRO_BITMAP *sprite_tatu,
-    double *ultimo_spawn_tatu,
-    double *ultimo_spawn_formiga,
-    int *indice_tatu,
-    int *indice_formiga,
-    double *cooldoown_tatu,
-    double *cooldoown_formiga,
-    int tipo,
+    Inimigo **inimigos,
+    FolhaSprites sprites,
+    double *ultimo_spawn_inimigo,
+    int *quant_inimigos,
+    double *cooldoown_inimigos,
+    int comportamento,
     int *contador_total
 );
 
 void inimigosLogica(
-    Inimigo inimigos[],
-    int *indice,
-    Jogador canga,
-    double *counts,
-    ALLEGRO_BITMAP *cuspe
+    Inimigo inimigos[], int *indice, Jogador canga, double *counts
 );
 
 void colisaoInimigos(
@@ -75,8 +62,6 @@ void processamentoBala(
 void reajusteInimigos(Inimigo inimigos[], int *indice);
 
 void desenharInimigo(Inimigo inimigos[], int indice, Jogador canga);
-
-void logicaBalaFormiga(Inimigo *inimigo);
 
 void danoJogador(
     Inimigo inimigos[], Jogador *canga, int indice, double counts, Som som

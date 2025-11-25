@@ -16,7 +16,7 @@ ALLEGRO := \
 
 
 dev: ${CODIGOS}
-	gcc ${CODIGOS} ${ALLEGRO} -g -Wall -o ${SAIDA}
+	gcc ${CODIGOS} ${ALLEGRO} -lm -g -Wall -o ${SAIDA}
 
 	@./${SAIDA}
 	@rm ${SAIDA}
