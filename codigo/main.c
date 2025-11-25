@@ -551,16 +551,19 @@ int main() {
                 case ALLEGRO_KEY_1:
                     aplicar_power(&globs.canga, powers_temp[0]);
                     globs.canga.powerup_pronto = false;
+                    al_flush_event_queue(fila);
                     break;
 
                 case ALLEGRO_KEY_2:
                     aplicar_power(&globs.canga, powers_temp[1]);
                     globs.canga.powerup_pronto = false;
+                    al_flush_event_queue(fila);
                     break;
 
                 case ALLEGRO_KEY_3:
                     aplicar_power(&globs.canga, powers_temp[2]);
                     globs.canga.powerup_pronto = false;
+                    al_flush_event_queue(fila);
                     break;
                 }
             }
@@ -575,10 +578,12 @@ int main() {
         if (evento.type == ALLEGRO_EVENT_KEY_DOWN &&
             evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
             jogo_pausado = !jogo_pausado;
+            al_flush_event_queue(fila);
         }
 
         else if (evento.type == ALLEGRO_EVENT_DISPLAY_SWITCH_OUT) {
             jogo_pausado = true;
+            al_flush_event_queue(fila);
         }
 
         if (jogo_pausado) {
