@@ -87,7 +87,7 @@ void criarInimigo(
             .vida = 65,
             .vida_max = 65,
             .dano = 1,
-            .velocidade = 2,
+            .velocidade = 1,
             .ativo = true,
         };
     }
