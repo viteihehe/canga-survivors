@@ -3,7 +3,7 @@
 #include "logica/inimigos.h"
 #include "logica/jogador.h"
 #include "logica/powerups.h"
-#include "logica/tela_morte.h"
+#include "logica/telas.h"
 #include "utils.h"
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_audio.h>
@@ -157,6 +157,7 @@ void waves(EstadoGlobal *globs) {
 
 typedef enum {
     B_JOGAR,
+    B_PONTUACAO,
     B_CREDITOS,
     B_SAIR,
 } EBotaoMenu;
@@ -191,17 +192,21 @@ void desenhar_menu(
     );
 
     desenhar_caixa_texto(
+        "Pontuação", COR_BRANCO, LARGURA / 2, ALTURA / 2 + 80, 300, 70, fonte_botao
+    );
+
+    desenhar_caixa_texto(
         "Créditos",
         COR_BRANCO,
         LARGURA / 2,
-        ALTURA / 2 + 80,
+        ALTURA / 2 + 160,
         300,
         70,
         fonte_botao
     );
 
     desenhar_caixa_texto(
-        "Sair", COR_BRANCO, LARGURA / 2, ALTURA / 2 + 160, 300, 70, fonte_botao
+        "Sair", COR_BRANCO, LARGURA / 2, ALTURA / 2 + 240, 300, 70, fonte_botao
     );
 
     // Selecionador
@@ -336,10 +341,12 @@ int main() {
     // Loop Principal
     // ----------
     bool forcar_fechamento = false;
+    bool usuario_na_pontuacao = false;
     bool usuario_no_menu = true;
     int botao_menu_selecionado = 0;
     char letra = 'A';
     int aux = 0;
+    int temp = 10;
     char sigla[4] = {'_', '_', '_', '\0'};
     bool selecionou = false;
     bool gravar = true;
@@ -363,15 +370,16 @@ int main() {
         // ----------
         if (usuario_no_menu) {
 
+            al_set_audio_stream_playing(jogo_sons.menu, true);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
-            al_set_audio_stream_playing(jogo_sons.menu, true);
+            
 
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                 switch (evento.keyboard.keycode) {
                 case ALLEGRO_KEY_W:
                 case ALLEGRO_KEY_UP:
-                    ciclar_inteiro(&botao_menu_selecionado, 0, 2, -1);
+                    ciclar_inteiro(&botao_menu_selecionado, 0, 3, -1);
 
                     al_play_sample(
                         jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
@@ -380,7 +388,7 @@ int main() {
 
                 case ALLEGRO_KEY_S:
                 case ALLEGRO_KEY_DOWN:
-                    ciclar_inteiro(&botao_menu_selecionado, 0, 2, +1);
+                    ciclar_inteiro(&botao_menu_selecionado, 0, 3, +1);
 
                     al_play_sample(
                         jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
@@ -398,6 +406,14 @@ int main() {
                     switch (botao_menu_selecionado) {
                     case B_JOGAR:
                         usuario_no_menu = false;
+                        al_set_audio_stream_playing(jogo_sons.menu, false);
+                        al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
+                        break;
+
+                    case B_PONTUACAO:
+                        usuario_no_menu = false;
+                        usuario_na_pontuacao = true;
+                        al_flush_event_queue(fila);
                         break;
 
                     case B_CREDITOS:
@@ -407,7 +423,12 @@ int main() {
                     case B_SAIR:
                         forcar_fechamento = true;
                         break;
+
+                    
+
                     }
+
+                    
                 }
             }
 
@@ -422,9 +443,6 @@ int main() {
             continue;
         }
 
-        // FIXME: Esses sons não eram pra ser executados toda vez
-        al_set_audio_stream_playing(jogo_sons.menu, false);
-        al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
 
         capturar_movimento(evento, &globs.canga.movimento);
         capturar_mira(evento, &globs.canga.mira);
@@ -433,27 +451,25 @@ int main() {
         // Tela de Game Over
         // ----------
         if (!globs.canga.vivo) {
+            if(temp > 0) {
+                letra = 'A';
+                aux = 0;
+                selecionou = false;
+            }
+            temp--;
             desenhar_mapa(sprites);
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
 
             if (gravar) {
-                tela_morte(
-                    globs.canga.pontuacao,
-                    fonte_titulo,
-                    fonte,
-                    sigla,
-                    &letra,
-                    &aux,
-                    &selecionou
-                );
+                tela_morte(evento, globs.canga.pontuacao, fonte_titulo, fonte,
+                sigla, &letra, &aux, &selecionou, jogo_sons.escolha, jogo_sons.selecao);
                 exibir_lista(fonte, fonte_titulo);
                 if (aux == 3) {
                     salvar_arquivo(globs.canga.pontuacao, sigla);
                     gravar = false;
                 }
             } else {
-                al_draw_filled_rectangle(180, -10, 820, 800, COR_PRETO);
                 exibir_lista(fonte, fonte_titulo);
                 al_draw_text(
                     fonte,
@@ -463,35 +479,6 @@ int main() {
                     ALLEGRO_ALIGN_CENTRE,
                     "Aperte [espaço] para recomeçar"
                 );
-            }
-
-            if (evento.type == ALLEGRO_EVENT_KEY_UP) {
-                if (evento.keyboard.keycode == ALLEGRO_KEY_S ||
-                    evento.keyboard.keycode == ALLEGRO_KEY_DOWN) {
-                    if (letra > '@' && letra < '[') {
-                        letra += 1;
-                    } else {
-                        letra = 'A';
-                    }
-                    al_play_sample(
-                        jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
-                    );
-                }
-                if (evento.keyboard.keycode == ALLEGRO_KEY_W ||
-                    evento.keyboard.keycode == ALLEGRO_KEY_UP) {
-                    if (letra > '@' && letra < '[') {
-                        letra -= 1;
-                    } else {
-                        letra = 'Z';
-                    }
-                    al_play_sample(
-                        jogo_sons.selecao, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0
-                    );
-                }
-
-                if ((evento.keyboard.keycode) == ALLEGRO_KEY_ENTER) {
-                    selecionou = true;
-                }
             }
 
             if ((evento.keyboard.keycode) == ALLEGRO_KEY_SPACE) {
@@ -505,9 +492,37 @@ int main() {
                 sigla[3] = '\0';
                 selecionou = false;
                 gravar = true;
+                temp = 10;
             }
 
             al_flip_display();
+            continue;
+        }
+
+        if(usuario_na_pontuacao) {
+            char sigla_busca [4];
+            if(temp > 0) {
+                aux = 0;
+                selecionou = false;
+                letra = 'A';
+                evento.keyboard.keycode = 0;
+                strcpy(sigla_busca, "___");
+            }
+            temp--;
+            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
+            al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
+
+            exibir_lista(fonte, fonte_titulo);
+            busca_pontucao(evento, fonte, fonte_titulo, &aux, &selecionou, &letra, jogo_sons.escolha, jogo_sons.selecao, sigla_busca);
+            
+            
+            al_flip_display();
+
+            if(evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+                usuario_no_menu = true;
+                usuario_na_pontuacao = false;
+                temp = 10;
+            }
             continue;
         }
 
@@ -552,8 +567,6 @@ int main() {
                 globs.sons
             );
 
-            al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
-            al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             waves(&globs);
             criar_bala_jogador(
                 &globs.canga,
@@ -671,6 +684,8 @@ int main() {
             al_flip_display();
         }
     }
+
+    
 
     al_destroy_display(tela);
     al_destroy_timer(tick_timer);
