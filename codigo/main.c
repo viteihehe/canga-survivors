@@ -181,7 +181,13 @@ void desenhar_menu(
     );
 
     desenhar_caixa_texto(
-        "Pontuação", COR_BRANCO, LARGURA / 2, ALTURA / 2 + 80, 300, 70, fonte_botao
+        "Pontuação",
+        COR_BRANCO,
+        LARGURA / 2,
+        ALTURA / 2 + 80,
+        300,
+        70,
+        fonte_botao
     );
 
     desenhar_caixa_texto(
@@ -330,6 +336,7 @@ int main() {
     // Loop Principal
     // ----------
     bool forcar_fechamento = false;
+    bool jogo_pausado = false;
     bool usuario_na_pontuacao = false;
     bool usuario_no_menu = true;
     int botao_menu_selecionado = 0;
@@ -348,7 +355,7 @@ int main() {
         al_wait_for_event(fila, &evento);
 
         // ----------
-        // Fechamento
+        // Controle de Janela
         // ----------
         if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE || forcar_fechamento) {
             break;
@@ -362,7 +369,6 @@ int main() {
             al_set_audio_stream_playing(jogo_sons.menu, true);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
-            
 
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
                 switch (evento.keyboard.keycode) {
@@ -396,7 +402,9 @@ int main() {
                     case B_JOGAR:
                         usuario_no_menu = false;
                         al_set_audio_stream_playing(jogo_sons.menu, false);
-                        al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
+                        al_set_audio_stream_playing(
+                            jogo_sons.musica_de_fundo, true
+                        );
                         break;
 
                     case B_PONTUACAO:
@@ -412,12 +420,7 @@ int main() {
                     case B_SAIR:
                         forcar_fechamento = true;
                         break;
-
-                    
-
                     }
-
-                    
                 }
             }
 
@@ -432,7 +435,6 @@ int main() {
             continue;
         }
 
-
         capturar_movimento(evento, &globs.canga.movimento);
         capturar_mira(evento, &globs.canga.mira);
 
@@ -440,7 +442,7 @@ int main() {
         // Tela de Game Over
         // ----------
         if (!globs.canga.vivo) {
-            if(temp > 0) {
+            if (temp > 0) {
                 letra = 'A';
                 aux = 0;
                 selecionou = false;
@@ -451,8 +453,18 @@ int main() {
             al_set_audio_stream_playing(jogo_sons.musica_derrota, true);
 
             if (gravar) {
-                tela_morte(evento, globs.canga.pontuacao, fonte_titulo, fonte,
-                sigla, &letra, &aux, &selecionou, jogo_sons.escolha, jogo_sons.selecao);
+                tela_morte(
+                    evento,
+                    globs.canga.pontuacao,
+                    fonte_titulo,
+                    fonte,
+                    sigla,
+                    &letra,
+                    &aux,
+                    &selecionou,
+                    jogo_sons.escolha,
+                    jogo_sons.selecao
+                );
                 exibir_lista(fonte, fonte_titulo);
                 if (aux == 3) {
                     salvar_arquivo(globs.canga.pontuacao, sigla);
@@ -488,9 +500,12 @@ int main() {
             continue;
         }
 
-        if(usuario_na_pontuacao) {
-            char sigla_busca [4];
-            if(temp > 0) {
+        // ----------
+        // Tela de Pontuações
+        // ----------
+        if (usuario_na_pontuacao) {
+            char sigla_busca[4];
+            if (temp > 0) {
                 aux = 0;
                 selecionou = false;
                 letra = 'A';
@@ -502,12 +517,21 @@ int main() {
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
 
             exibir_lista(fonte, fonte_titulo);
-            busca_pontucao(evento, fonte, fonte_titulo, &aux, &selecionou, &letra, jogo_sons.escolha, jogo_sons.selecao, sigla_busca);
-            
-            
+            busca_pontucao(
+                evento,
+                fonte,
+                fonte_titulo,
+                &aux,
+                &selecionou,
+                &letra,
+                jogo_sons.escolha,
+                jogo_sons.selecao,
+                sigla_busca
+            );
+
             al_flip_display();
 
-            if(evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+            if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
                 usuario_no_menu = true;
                 usuario_na_pontuacao = false;
                 temp = 10;
@@ -540,6 +564,53 @@ int main() {
                     break;
                 }
             }
+
+            al_flip_display();
+            continue;
+        }
+
+        // ----------
+        // Tela de Pause
+        // ----------
+        if (evento.type == ALLEGRO_EVENT_KEY_DOWN &&
+            evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+            jogo_pausado = !jogo_pausado;
+        }
+
+        else if (evento.type == ALLEGRO_EVENT_DISPLAY_SWITCH_OUT) {
+            jogo_pausado = true;
+        }
+
+        if (jogo_pausado) {
+            desenhar_mapa(sprites);
+
+            // Fundo
+            al_draw_filled_rectangle(
+                0, 0, LARGURA, ALTURA, al_map_rgba(0, 0, 0, 150)
+            );
+
+            // Barra
+            al_draw_filled_rectangle(
+                0, (ALTURA / 2.0) - 80, LARGURA, (ALTURA / 2.0) + 80, COR_PRETO
+            );
+
+            al_draw_text(
+                fonte,
+                COR_BRANCO,
+                LARGURA / 2.0,
+                (ALTURA / 2.0) - (al_get_font_ascent(fonte) / 2.0) - 25,
+                ALLEGRO_ALIGN_CENTRE,
+                "Pausado"
+            );
+
+            al_draw_text(
+                fonte,
+                al_map_rgb(150, 150, 150),
+                LARGURA / 2.0,
+                (ALTURA / 2.0) - (al_get_font_ascent(fonte) / 2.0) + 25,
+                ALLEGRO_ALIGN_CENTRE,
+                "Pressione [ESC] para despausar"
+            );
 
             al_flip_display();
             continue;
@@ -621,8 +692,6 @@ int main() {
             al_flip_display();
         }
     }
-
-    
 
     al_destroy_display(tela);
     al_destroy_timer(tick_timer);
