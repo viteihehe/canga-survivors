@@ -8,11 +8,10 @@
 - [X] Corrigir os inimigos atravessando o cenário
 - [x] Balancear as evoluções
 - [X] Ajustar a vida dos inimigos para números grandes
-- [x] Implementar os sprites do personagem
-
-
 
 ### Versão 2
+- [x] Implementar os sprites do personagem
+- [ ] Melhorar a movimentação dos inimigos
 - [X] Passar balas para uma fila/lista/pilha (Lista)
 - [ ] Sistema de pause
 - [ ] Sistema de mapas

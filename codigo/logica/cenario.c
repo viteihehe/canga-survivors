@@ -1,25 +1,25 @@
 #include "cenario.h"
 
-int mapa01_blocos[MAPA_LINHAS][MAPA_COLUNAS] = {
-    {A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, P, P, P, P},
+int mapa_blocos[MAPA_LINHAS][MAPA_COLUNAS] = {
+    {A, A, A, A, A, A, A, A, N, N, N, A, A, A, A, A, P, P, P, P},
     {A, N, N, N, P, P, N, N, N, N, N, N, N, N, N, N, P, P, P, P},
     {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, P},
-    {A, N, C, N, N, N, N, N, C, N, N, N, N, N, N, N, N, N, N, A},
+    {A, N, C, N, N, N, N, P, N, N, N, N, N, N, N, N, N, N, N, P},
     {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, A},
-    {A, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
-    {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, P, N, A},
-    {A, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, N, N, N, A},
-    {A, N, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, A},
+    {N, N, N, C, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
+    {N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N},
+    {A, N, N, N, N, N, N, N, N, N, N, N, C, N, N, N, N, N, N, N},
+    {A, N, N, N, C, N, N, N, N, N, N, N, N, N, N, P, N, N, N, N},
     {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, A},
     {A, N, N, N, N, N, N, N, N, N, N, N, N, N, N, N, C, N, N, A},
-    {A, N, P, P, N, N, N, N, N, N, N, P, N, N, N, N, N, N, N, A},
-    {A, N, P, N, N, N, P, N, N, N, N, P, P, N, N, N, N, N, N, A},
+    {A, N, N, P, N, N, N, N, N, N, N, P, N, N, N, N, N, N, N, A},
+    {A, N, N, N, N, P, N, N, N, N, N, P, P, N, N, N, N, N, N, A},
     {A, N, N, N, N, N, N, N, N, N, P, P, P, N, N, N, N, N, N, A},
-    {A, A, A, A, A, A, A, A, A, A, P, P, P, P, A, A, A, A, A, A},
+    {A, A, A, A, A, A, N, N, N, A, P, P, P, P, A, A, A, A, A, A},
 };
 
-int mapa01_decos[MAPA_LINHAS][MAPA_COLUNAS] = {
+int mapa_decos[MAPA_LINHAS][MAPA_COLUNAS] = {
     {},
     {},
     {DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DN, DG, DG},
@@ -52,7 +52,7 @@ void desenhar_mapa(FolhaSprites sprites) {
             // ----------
             // Blocos
             // ----------
-            switch (mapa01_blocos[lin][col]) {
+            switch (mapa_blocos[lin][col]) {
             case C:
                 al_draw_scaled_bitmap(
                     sprites.sombra, 0, 0, 16, 16, x, y, 48, 48, 0
@@ -84,7 +84,7 @@ void desenhar_mapa(FolhaSprites sprites) {
             // ----------
             // Decorações
             // ----------
-            switch (mapa01_decos[lin][col]) {
+            switch (mapa_decos[lin][col]) {
             case DG:
                 al_draw_scaled_bitmap(
                     sprites.grama, 0, 0, 16, 16, x, y, 48, 48, 0
@@ -118,7 +118,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_y = (y - tam_box) / TAM_BLOCOS;
     // al_draw_filled_circle(x - tam_box, y - tam_box, 3, al_map_rgb(0, 255,
     // 0));
-    if (mapa01_blocos[cel_y][cel_x] >= 1) {
+    if (mapa_blocos[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -127,7 +127,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_y = (y - tam_box) / TAM_BLOCOS;
     // al_draw_filled_circle(x + tam_box, y - tam_box, 3, al_map_rgb(0, 255,
     // 0));
-    if (mapa01_blocos[cel_y][cel_x] >= 1) {
+    if (mapa_blocos[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -136,7 +136,7 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_y = (y + tam_box) / TAM_BLOCOS;
     // al_draw_filled_circle(x - tam_box, y + tam_box, 3, al_map_rgb(0, 255,
     // 0));
-    if (mapa01_blocos[cel_y][cel_x] >= 1) {
+    if (mapa_blocos[cel_y][cel_x] >= 1) {
         return 1;
     }
 
@@ -145,9 +145,22 @@ int colide_no_cenario(int x, int y, int tam_box) {
     cel_y = (y + tam_box) / TAM_BLOCOS;
     // al_draw_filled_circle(x + tam_box, y + tam_box, 3, al_map_rgb(0, 255,
     // 0));
-    if (mapa01_blocos[cel_y][cel_x] >= 1) {
+    if (mapa_blocos[cel_y][cel_x] >= 1) {
         return 1;
     }
 
     return 0;
+}
+
+/*
+    Calcula a coordenada X e Y absoluta e centralizada de um bloco Xb e Yb.
+
+    Exemplo:
+        pegar_coord(1, 2) -> {66, 120}
+*/
+CoordMapa pegar_coord_centro_bloco(int x_bloco, int y_bloco) {
+    return (CoordMapa){
+        .x = (x_bloco * TAM_BLOCOS) + TAM_BLOCOS / 2,
+        .y = (y_bloco * TAM_BLOCOS) + TAM_BLOCOS / 2,
+    };
 }

@@ -19,6 +19,13 @@ enum EDecoracao {
     DP, // Pedrinhas
 };
 
+typedef struct {
+    int x;
+    int y;
+} CoordMapa;
+
 void desenhar_mapa(FolhaSprites sprites);
 
 int colide_no_cenario(int x, int y, int tam_box);
+
+CoordMapa pegar_coord_centro_bloco(int x_bloco, int y_bloco);
