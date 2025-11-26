@@ -350,7 +350,7 @@ int main() {
     bool selecionou = false;
     bool gravar = true;
 
-    EPowerUps *powers = malloc(sizeof(EPowerUps) * 3);
+    EPowerUps *powers = calloc(sizeof(EPowerUps), 3);
 
     ALLEGRO_EVENT evento;
     for (;;) {
