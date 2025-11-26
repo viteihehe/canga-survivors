@@ -172,19 +172,35 @@ void colisaoInimigos(
             int colisao_y = tamanho;
             if (abs(inimigos[i].posx - inimigos[j].posx) <= colisao_x &&
                 abs(inimigos[i].posy - inimigos[j].posy) <= colisao_y) {
+                int x_futuro_i = inimigos[i].posx;
+                int y_futuro_i = inimigos[i].posy;
+
+                int x_futuro_j = inimigos[j].posx;
+                int y_futuro_j = inimigos[j].posy;
+
                 if (inimigos[i].posx < inimigos[j].posx) {
-                    inimigos[i].posx -= inimigos[i].velocidade / 1.5;
-                    inimigos[j].posx += inimigos[j].velocidade / 1.5;
+                    x_futuro_i -= inimigos[i].velocidade / 1.5;
+                    x_futuro_j += inimigos[j].velocidade / 1.5;
                 } else {
-                    inimigos[i].posx += inimigos[i].velocidade / 1.5;
-                    inimigos[j].posx -= inimigos[j].velocidade / 1.5;
+                    x_futuro_i += inimigos[i].velocidade / 1.5;
+                    x_futuro_j -= inimigos[j].velocidade / 1.5;
                 }
                 if (inimigos[i].posy < inimigos[j].posy) {
-                    inimigos[i].posy -= inimigos[i].velocidade / 1.5;
-                    inimigos[j].posy += inimigos[j].velocidade / 1.5;
+                    y_futuro_i -= inimigos[i].velocidade / 1.5;
+                    y_futuro_j += inimigos[j].velocidade / 1.5;
                 } else {
-                    inimigos[i].posy += inimigos[i].velocidade / 1.5;
-                    inimigos[j].posy -= inimigos[j].velocidade / 1.5;
+                    y_futuro_i += inimigos[i].velocidade / 1.5;
+                    y_futuro_j -= inimigos[j].velocidade / 1.5;
+                }
+
+                if (!colide_no_cenario(x_futuro_i, y_futuro_i, 40)) {
+                    inimigos[i].posx = x_futuro_i;
+                    inimigos[i].posy = y_futuro_i;
+                }
+
+                if (!colide_no_cenario(x_futuro_j, y_futuro_j, 40)) {
+                    inimigos[j].posx = x_futuro_j;
+                    inimigos[j].posy = y_futuro_j;
                 }
             }
         }
