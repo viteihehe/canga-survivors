@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../midia.h"
+#include "lista.h"
 #include <allegro5/bitmap.h>
 #include <allegro5/events.h>
-#include "lista.h"
 
 #define VEL_BALA 10 // Em frames
 
@@ -36,17 +36,19 @@ typedef struct {
     Som sons;
 } Jogador;
 
-void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas, int *passos_dados);
+void capturar_movimento(
+    ALLEGRO_EVENT evento,
+    MapaDirecoes *teclas,
+    int *passos_dados,
+    bool *primeiro_passo
+);
 
 void capturar_mira(ALLEGRO_EVENT evento, MapaDirecoes *teclas);
 
 void mover_jogador(MapaDirecoes teclas, Jogador *jogador);
 
 void criar_bala_jogador(
-    Jogador *jogador,
-    ALLEGRO_TIMER *tick_timer,
-    FolhaSprites sprites,
-    Som som
+    Jogador *jogador, ALLEGRO_TIMER *tick_timer, FolhaSprites sprites, Som som
 );
 
 void mover_balas(Lista *lista);

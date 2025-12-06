@@ -7,6 +7,9 @@ typedef struct {
     ALLEGRO_BITMAP *canga_pernas;
     ALLEGRO_BITMAP *coracao;
 
+    ALLEGRO_BITMAP *guia_wasd;
+    ALLEGRO_BITMAP *guia_setas;
+
     ALLEGRO_BITMAP *tatu;
     ALLEGRO_BITMAP *formiga;
     ALLEGRO_BITMAP *cuspe;
@@ -21,7 +24,6 @@ typedef struct {
     ALLEGRO_BITMAP *grama;
     ALLEGRO_BITMAP *pedrinhas;
     ALLEGRO_BITMAP *caveira;
-
 } FolhaSprites;
 
 typedef struct {

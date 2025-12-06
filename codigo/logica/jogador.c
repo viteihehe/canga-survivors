@@ -7,7 +7,12 @@
 /*
     Uma função cujo propósito é atualizar o estado das teclas WASD do jogador.
 */
-void capturar_movimento(ALLEGRO_EVENT evento, MapaDirecoes *teclas, int *passos_dados) {
+void capturar_movimento(
+    ALLEGRO_EVENT evento,
+    MapaDirecoes *teclas,
+    int *passos_dados,
+    bool *primeiro_passo
+) {
     if (evento.type == ALLEGRO_EVENT_KEY_DOWN) {
         switch (evento.keyboard.keycode) {
         case ALLEGRO_KEY_W:

@@ -280,6 +280,9 @@ int main() {
         .canga = al_load_bitmap("./materiais/sprites/canga_com.png"),
         .coracao = al_load_bitmap("./materiais/sprites/coracao.png"),
 
+        .guia_wasd = al_load_bitmap("./materiais/sprites/wasd.png"),
+        .guia_setas = al_load_bitmap("./materiais/sprites/setas.png"),
+
         .tatu = al_load_bitmap("./materiais/sprites/peba2_1.png"),
         .formiga = al_load_bitmap("./materiais/sprites/formiga.png"),
         .cuspe = al_load_bitmap("./materiais/sprites/cuspe.png"),
@@ -365,6 +368,7 @@ int main() {
     char sigla[4] = {'_', '_', '_', '\0'};
     bool selecionou = false;
     bool gravar = true;
+    bool jogador_primeiro_mov = false;
 
     EPowerUps *powers = calloc(sizeof(EPowerUps), 3);
 
@@ -372,9 +376,12 @@ int main() {
     for (;;) {
         al_wait_for_event(fila, &evento);
 
-        if (globs.canga.vivo) {
+        if (globs.canga.vivo && !usuario_no_menu) {
             capturar_movimento(
-                evento, &globs.canga.movimento, &globs.estatisticas.passos_dados
+                evento,
+                &globs.canga.movimento,
+                &globs.estatisticas.passos_dados,
+                &jogador_primeiro_mov
             );
             capturar_mira(evento, &globs.canga.mira);
         }
@@ -720,6 +727,10 @@ int main() {
                 );
 
                 globs.delay_mensagem--;
+            }
+
+            if (globs.estatisticas.passos_dados == 0) {
+                desenhar_guias(sprites, fonte_menor);
             }
 
             al_flip_display();
