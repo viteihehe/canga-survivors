@@ -219,16 +219,6 @@ void tela_morte(
         escreveu = 1;
     }
 
-    desenhar_caixa_texto(
-        "Aperte [espaço] para recomeçar",
-        COR_BRANCO,
-        LARGURA / 2,
-        700,
-        500,
-        80,
-        fonte
-    );
-
     exibir_lista(fonte, fonte_frase, 500, 250, 845, 620, 0);
     exibir_escrita_sigla(
         fonte_menor, op, selecionou, sigla, letra, 760, 580, "Insira sua sigla:"

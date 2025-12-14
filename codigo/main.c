@@ -501,6 +501,31 @@ int main() {
                     salvar_arquivo(globs.canga.pontuacao, sigla);
                     gravar = false;
                 }
+            } else {
+                tela_morte(
+                    evento,
+                    globs.canga.pontuacao,
+                    fonte_menor,
+                    fonte,
+                    fonte_frase,
+                    sigla,
+                    &letra,
+                    &aux,
+                    &selecionou,
+                    jogo_sons.escolha,
+                    jogo_sons.selecao,
+                    globs.sprites.caveira,
+                    globs.estatisticas
+                );
+                desenhar_caixa_texto(
+                    "Aperte [espaço] para recomeçar",
+                    COR_BRANCO,
+                    LARGURA / 2,
+                    700,
+                    500,
+                    80,
+                    fonte
+                );
             }
 
             if ((evento.keyboard.keycode) == ALLEGRO_KEY_SPACE) {
