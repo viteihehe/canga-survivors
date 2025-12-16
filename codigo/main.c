@@ -558,20 +558,24 @@ int main() {
                     fonte
                 );
                 if ((evento.keyboard.keycode) == ALLEGRO_KEY_SPACE) {
-                reiniciar_estado(&globs);
-                botao_menu_selecionado = 0;
-                letra = 'A';
-                aux = 0;
-                sigla[0] = '_';
-                sigla[1] = '_';
-                sigla[2] = '_';
-                sigla[3] = '\0';
-                selecionou = false;
-                gravar = true;
-                tempo = 10;
-                al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
-                al_set_audio_stream_playing(jogo_sons.musica_de_fundo, true);
-            }
+                    reiniciar_estado(&globs);
+                    botao_menu_selecionado = 0;
+                    letra = 'A';
+                    aux = 0;
+                    sigla[0] = '_';
+                    sigla[1] = '_';
+                    sigla[2] = '_';
+                    sigla[3] = '\0';
+                    selecionou = false;
+                    gravar = true;
+                    tempo = 10;
+                    al_set_audio_stream_playing(
+                        jogo_sons.musica_derrota, false
+                    );
+                    al_set_audio_stream_playing(
+                        jogo_sons.musica_de_fundo, true
+                    );
+                }
             }
 
             al_flip_display();
