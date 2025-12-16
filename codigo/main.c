@@ -360,6 +360,7 @@ int main() {
     bool forcar_fechamento = false;
     bool jogo_pausado = false;
     bool usuario_na_pontuacao = false;
+    bool usuario_nos_creditos = false;
     bool usuario_no_menu = true;
     int botao_menu_selecionado = 0;
     char letra = 'A';
@@ -394,10 +395,33 @@ int main() {
         }
 
         // ----------
+        // Tela de Créditos
+        // ----------
+        if (usuario_nos_creditos) {
+            desenhar_mapa(sprites);
+
+            desenhar_caixa_texto(
+                "Criado por Jozenias Antônio e Victor Manuel",
+                COR_BRANCO,
+                LARGURA / 2,
+                ALTURA / 2,
+                750,
+                120,
+                fonte
+            );
+
+            if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+                usuario_nos_creditos = false;
+            }
+
+            al_flip_display();
+            continue;
+        }
+
+        // ----------
         // Menu Principal
         // ----------
         if (usuario_no_menu) {
-
             al_set_audio_stream_playing(jogo_sons.menu, true);
             al_set_audio_stream_playing(jogo_sons.musica_derrota, false);
             al_set_audio_stream_playing(jogo_sons.musica_de_fundo, false);
@@ -447,7 +471,7 @@ int main() {
                         break;
 
                     case B_CREDITOS:
-                        // TODO: Criar painél de créditos;
+                        usuario_nos_creditos = true;
                         break;
 
                     case B_SAIR:
